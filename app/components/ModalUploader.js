@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Dropzone from 'react-dropzone';
+import XLSX from 'xlsx';
 
 type Props = {
   buttonLabel: string,
@@ -33,6 +34,37 @@ class ModalUploader extends Component<Props> {
   decline = () => {
     this.toggle();
     this.handleFile([null]);
+  };
+
+  parseData = () => {
+    const rABS = true;
+    const { file } = this.state;
+    console.log(file);
+    const reader = new FileReader();
+    reader.onload = f => {
+      let data = f.target.result;
+      console.log('data', data);
+      if (!rABS) data = new Uint8Array(data);
+      const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
+      // const json = XLSX.utils.sheet_to_json(workbook, { raw: true });
+      const ws = workbook.Sheets['Лист1'];
+      const json = XLSX.utils.sheet_to_json(ws, {
+        header: [
+          'id',
+          'family',
+          'name',
+          'patronymic',
+          'birthday',
+          'position',
+          'registryType',
+          'taxpayerNumber'
+        ]
+      });
+      console.log(json.slice(1));
+      /* DO SOMETHING WITH workbook HERE */
+    };
+    if (rABS) reader.readAsBinaryString(file);
+    else reader.readAsArrayBuffer(file);
   };
 
   render() {
@@ -76,7 +108,7 @@ class ModalUploader extends Component<Props> {
             <Button
               className="text-uppercase"
               color="primary"
-              onClick={this.toggle}
+              onClick={this.parseData}
             >
               Сохранить
             </Button>{' '}
