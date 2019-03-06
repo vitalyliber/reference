@@ -16,7 +16,7 @@ const rootReducer = createRootReducer(history);
 const persistConfig = {
   key: 'root',
   storage: createElectronStorage(),
-  whitelist: ['counter']
+  whitelist: ['counter', 'users']
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

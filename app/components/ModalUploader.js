@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Dropzone from 'react-dropzone';
-import XLSX from 'xlsx';
 
 type Props = {
   buttonLabel: string,
   title: string,
-  acceptedFiles: string
+  acceptedFiles: string,
+  parseData: () => void
 };
 
 class ModalUploader extends Component<Props> {
@@ -37,34 +37,10 @@ class ModalUploader extends Component<Props> {
   };
 
   parseData = () => {
-    const rABS = true;
     const { file } = this.state;
-    console.log(file);
-    const reader = new FileReader();
-    reader.onload = f => {
-      let data = f.target.result;
-      console.log('data', data);
-      if (!rABS) data = new Uint8Array(data);
-      const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
-      // const json = XLSX.utils.sheet_to_json(workbook, { raw: true });
-      const ws = workbook.Sheets['Лист1'];
-      const json = XLSX.utils.sheet_to_json(ws, {
-        header: [
-          'id',
-          'family',
-          'name',
-          'patronymic',
-          'birthday',
-          'position',
-          'registryType',
-          'taxpayerNumber'
-        ]
-      });
-      console.log(json.slice(1));
-      /* DO SOMETHING WITH workbook HERE */
-    };
-    if (rABS) reader.readAsBinaryString(file);
-    else reader.readAsArrayBuffer(file);
+    const { action } = this.props;
+    action(file);
+    this.decline();
   };
 
   render() {
