@@ -8,6 +8,7 @@ import XLSX from 'xlsx';
 import routes from '../constants/routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
+import { tableDateFormat } from '../utils/dateFormat';
 
 type Props = {
   users: []
@@ -26,6 +27,7 @@ export default class Home extends Component<Props> {
         if (!rABS) data = new Uint8Array(data);
         const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
         const ws = workbook.Sheets['Лист1'];
+        console.log('WorkSheet', ws);
         const json = XLSX.utils.sheet_to_json(ws, {
           header: [
             'id',
@@ -41,11 +43,11 @@ export default class Home extends Component<Props> {
         console.log(json.slice(1));
         const jsonWithoutHeaders = json.slice(1);
         if (typeof jsonWithoutHeaders[0]['id'] !== 'number') {
-          return alert('Попробуйте другой файл')
+          return alert('Попробуйте другой файл');
         }
         mergeUsers(json.slice(1));
       } catch (e) {
-        alert('Попробуйте другой файл')
+        alert('Попробуйте другой файл');
       }
     };
     if (rABS) reader.readAsBinaryString(file);
@@ -91,13 +93,13 @@ export default class Home extends Component<Props> {
                   <td>{el.family}</td>
                   <td>{el.name}</td>
                   <td>{el.patronymic}</td>
-                  <td>{el.birthday}</td>
+                  <td>{tableDateFormat(el.birthday)}</td>
                   <td>{el.position}</td>
                   <td>{el.registryType}</td>
                   <td>2018</td>
                   <td>Да</td>
                   <td>
-                    <Link to={`${routes.EDIT}`}>
+                    <Link to={{ pathname: routes.EDIT, state: { ...el } }}>
                       <FontAwesomeIcon icon="edit" />
                     </Link>
                   </td>

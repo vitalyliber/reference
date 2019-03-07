@@ -8,6 +8,8 @@ export default class EditPage extends Component<Props> {
   props: Props;
 
   render() {
-    return <Edit />;
+    const { location } = this.props;
+
+    return <Edit location={location} />;
   }
 }

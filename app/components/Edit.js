@@ -17,6 +17,7 @@ import {
 import routes from '../constants/routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
+import { tableDateFormat } from '../utils/dateFormat';
 
 type Props = {};
 
@@ -24,6 +25,10 @@ export default class Edit extends Component<Props> {
   props: Props;
 
   render() {
+    const {
+      location: { state }
+    } = this.props;
+
     return (
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
@@ -37,14 +42,14 @@ export default class Edit extends Component<Props> {
         <Card className="mb-3">
           <CardBody>
             <CardTitle>
-              Иванов Иван Иванович
+              {`${state.family} ${state.name} ${state.patronymic}`}
               <Badge className="ml-1" color="primary">
-                01.01.1970
+                {tableDateFormat(state.birthday)}
               </Badge>
             </CardTitle>
-            <CardSubtitle>ИНН: 333344442222</CardSubtitle>
-            <CardSubtitle>Тип реестра: РГГС</CardSubtitle>
-            <CardText>Помощник</CardText>
+            <CardSubtitle>ИНН: {state.taxpayerNumber}</CardSubtitle>
+            <CardSubtitle>Тип реестра: {state.registryType}</CardSubtitle>
+            <CardText>{state.position}</CardText>
           </CardBody>
         </Card>
         <ModalUploader
