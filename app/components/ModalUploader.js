@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Dropzone from 'react-dropzone';
+import fileExtension from 'file-extension';
 
 type Props = {
   buttonLabel: string,
@@ -38,13 +39,16 @@ class ModalUploader extends Component<Props> {
 
   parseData = () => {
     const { file } = this.state;
-    const { action } = this.props;
+    const { action, acceptedFiles } = this.props;
+    if (`.${fileExtension(file.name)}` !== acceptedFiles) {
+      return alert('Неверный формат файла');
+    }
     action(file);
     this.decline();
   };
 
   render() {
-    const { buttonLabel, title, acceptedFiles } = this.props;
+    const { buttonLabel, title, acceptedFiles, children } = this.props;
     const { modal, file } = this.state;
 
     return (
@@ -60,6 +64,7 @@ class ModalUploader extends Component<Props> {
         <Modal isOpen={modal} toggle={this.toggle}>
           <ModalHeader toggle={this.toggle}>{title}</ModalHeader>
           <ModalBody>
+            {children}
             {!file && (
               <Dropzone
                 acceptedFiles={acceptedFiles}
@@ -71,7 +76,7 @@ class ModalUploader extends Component<Props> {
                   <section>
                     <div {...getRootProps()}>
                       <input {...getInputProps()} />
-                      <p className="text-center">Перетащите сюда файл</p>
+                      <p className="text-center">Перетащите сюда файл {acceptedFiles}</p>
                       <p className="text-center">Или кликните, чтобы выбрать</p>
                     </div>
                   </section>

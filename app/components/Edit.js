@@ -14,15 +14,55 @@ import {
   CardSubtitle,
   Badge
 } from 'reactstrap';
+import Select from 'react-select';
+import electron from 'electron';
+import fs from 'fs';
 import routes from '../constants/routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
-import { tableDateFormat } from '../utils/dateFormat';
+import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
 
 type Props = {};
 
 export default class Edit extends Component<Props> {
   props: Props;
+
+  state = {
+    selectedOption: null
+  };
+
+  handleChange = selectedOption => {
+    this.setState({ selectedOption });
+    console.log(`Option selected:`, selectedOption);
+  };
+
+  yearInput = () => {
+    const { selectedOption } = this.state;
+    const options = getListOfYears().map(el => ({
+      value: el,
+      label: el
+    }));
+    return (
+      <WrappedSelect
+        value={selectedOption}
+        onChange={this.handleChange}
+        options={options}
+      />
+    );
+  };
+
+  saveFile = file => {
+    const userDataPath = (electron.app || electron.remote.app).getPath(
+      'userData'
+    );
+    console.log(userDataPath);
+    const reader = new FileReader();
+    reader.onload = f => {
+      const data = f.target.result;
+      fs.writeFileSync(`${userDataPath}/test.xsb`, data, 'binary');
+    };
+    reader.readAsBinaryString(file);
+  };
 
   render() {
     const {
@@ -52,11 +92,15 @@ export default class Edit extends Component<Props> {
             <CardText>{state.position}</CardText>
           </CardBody>
         </Card>
+
         <ModalUploader
           acceptedFiles=".xsb"
           title="Выберите файл"
           buttonLabel="Загрузить справку"
-        />
+          action={this.saveFile}
+        >
+          {this.yearInput()}
+        </ModalUploader>
         <BorderContainer>
           <Table responsive hover striped size="sm">
             <thead>
@@ -97,4 +141,8 @@ const Container = styled.div`
 const BorderContainer = styled.div`
   border: solid #f7f7f9;
   border-width: 0.2rem;
+`;
+
+const WrappedSelect = styled(Select)`
+  margin-bottom: 15px;
 `;
