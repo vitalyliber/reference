@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import Edit from '../components/Edit';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 type Props = {};
 
@@ -10,6 +11,10 @@ export default class EditPage extends Component<Props> {
   render() {
     const { location } = this.props;
 
-    return <Edit location={location} />;
+    return (
+      <ErrorBoundary redirect>
+        <Edit location={location} />
+      </ErrorBoundary>
+    );
   }
 }
