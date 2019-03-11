@@ -5,13 +5,16 @@ import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Table, Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import XLSX from 'xlsx';
+import _ from 'lodash';
 import { toast } from 'react-toastify';
 import routes from '../constants/routes';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat } from '../utils/dateFormat';
 
 type Props = {
-  users: []
+  users: [],
+  references: [],
+  mergeUsers: void
 };
 
 export default class Home extends Component<Props> {
@@ -74,6 +77,17 @@ export default class Home extends Component<Props> {
     reader.readAsArrayBuffer(file);
   };
 
+  lastPeriod = userId => {
+    const { references } = this.props;
+    const userReferences = references.filter(el => el.userId === userId);
+    const userReferencesLength = userReferences.length;
+    if (userReferencesLength > 0) {
+      const sortedReferences = _.sortBy(userReferences, ['year']);
+      return [sortedReferences[userReferencesLength - 1]['year'], true];
+    }
+    return ['-', false];
+  };
+
   render() {
     const { users } = this.props;
     return (
@@ -107,24 +121,27 @@ export default class Home extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              {users.map(el => (
-                <tr key={el.id}>
-                  <th scope="row">{el.id}</th>
-                  <td>{el.family}</td>
-                  <td>{el.name}</td>
-                  <td>{el.patronymic}</td>
-                  <td>{tableDateFormat(el.birthday)}</td>
-                  <td>{el.position}</td>
-                  <td>{el.registryType}</td>
-                  <td>2018</td>
-                  <td>Да</td>
-                  <td>
-                    <Link to={{ pathname: routes.EDIT, state: { ...el } }}>
-                      <FontAwesomeIcon icon="edit" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {users.map(el => {
+                const [lastPeriod, hasPeriod] = this.lastPeriod(el.id);
+                return (
+                  <tr key={el.id}>
+                    <th scope="row">{el.id}</th>
+                    <td>{el.family}</td>
+                    <td>{el.name}</td>
+                    <td>{el.patronymic}</td>
+                    <td>{tableDateFormat(el.birthday)}</td>
+                    <td>{el.position}</td>
+                    <td>{el.registryType}</td>
+                    <td>{lastPeriod}</td>
+                    <td>{hasPeriod ? 'Да' : 'Нет'}</td>
+                    <td>
+                      <Link to={{ pathname: routes.EDIT, state: { ...el } }}>
+                        <FontAwesomeIcon icon="edit" />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
         </BorderContainer>
