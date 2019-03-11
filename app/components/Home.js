@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Table, Breadcrumb, BreadcrumbItem } from 'reactstrap';
+import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
@@ -24,6 +24,10 @@ export default class Home extends Component<Props> {
     super(props);
     this.modal = React.createRef();
   }
+
+  state = {
+    searchInput: ''
+  };
 
   parseData = file => {
     const errorMsg = 'Попробуйте другой файл';
@@ -88,8 +92,27 @@ export default class Home extends Component<Props> {
     return ['-', false];
   };
 
+  toggleSearchInput = event => {
+    this.setState({ searchInput: event.target.value });
+  };
+
   render() {
+    let visibleUsers;
     const { users } = this.props;
+    const { searchInput } = this.state;
+
+    if (!_.isEmpty(searchInput)) {
+      const loverCaseSearchInput = searchInput.toLowerCase();
+      visibleUsers = users.filter(
+        ({ name, family, patronymic, taxpayerNumber }) =>
+          `${family} ${name} ${patronymic} ${taxpayerNumber}`
+            .toLowerCase()
+            .search(loverCaseSearchInput) !== -1
+      );
+    } else {
+      visibleUsers = users;
+    }
+
     return (
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
@@ -103,6 +126,12 @@ export default class Home extends Component<Props> {
           buttonLabel="Импорт списка"
           action={this.parseData}
           ref={this.modal}
+        />
+        <WrappedInput
+          type="search"
+          name="search"
+          placeholder="Поиск по ФИО и ИНН"
+          onChange={this.toggleSearchInput}
         />
         <BorderContainer>
           <Table responsive hover striped size="sm">
@@ -121,7 +150,7 @@ export default class Home extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              {users.map(el => {
+              {visibleUsers.map(el => {
                 const [lastPeriod, hasPeriod] = this.lastPeriod(el.id);
                 return (
                   <tr key={el.id}>
@@ -157,4 +186,8 @@ const Container = styled.div`
 const BorderContainer = styled.div`
   border: solid #f7f7f9;
   border-width: 0.2rem;
+`;
+
+const WrappedInput = styled(Input)`
+  margin-bottom: 15px;
 `;
