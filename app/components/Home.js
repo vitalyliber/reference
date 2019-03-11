@@ -171,6 +171,15 @@ export default class Home extends Component<Props> {
                   </tr>
                 );
               })}
+              {visibleUsers.length === 0 && (
+                <tr className="table-light">
+                  <td colSpan="9" className="text-center mt-4">
+                    {_.isEmpty(searchInput)
+                      ? 'Список пуст'
+                      : 'Ничего не найдено'}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </BorderContainer>

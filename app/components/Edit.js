@@ -135,6 +135,8 @@ export default class Edit extends Component<Props> {
       references
     } = this.props;
 
+    const filteredReferences = references.filter(el => el.userId === state.id);
+
     return (
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
@@ -179,36 +181,41 @@ export default class Edit extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              {references
-                .filter(el => el.userId === state.id)
-                .map((el, index) => (
-                  <tr key={el.id}>
-                    <th scope="row">{index + 1}</th>
-                    <td>{el.year}</td>
-                    <td>
-                      <a
-                        href="#"
-                        onClick={e => {
-                          e.preventDefault();
-                          this.downloadFile(el);
-                        }}
-                      >
-                        <FontAwesomeIcon icon="file" />
-                      </a>
-                    </td>
-                    <td>
-                      <a
-                        href="#"
-                        onClick={e => {
-                          e.preventDefault();
-                          this.removeFile(el);
-                        }}
-                      >
-                        <FontAwesomeIcon icon="trash" />
-                      </a>
-                    </td>
-                  </tr>
-                ))}
+              {filteredReferences.map((el, index) => (
+                <tr key={el.id}>
+                  <th scope="row">{index + 1}</th>
+                  <td>{el.year}</td>
+                  <td>
+                    <a
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        this.downloadFile(el);
+                      }}
+                    >
+                      <FontAwesomeIcon icon="file" />
+                    </a>
+                  </td>
+                  <td>
+                    <a
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        this.removeFile(el);
+                      }}
+                    >
+                      <FontAwesomeIcon icon="trash" />
+                    </a>
+                  </td>
+                </tr>
+              ))}
+              {filteredReferences.length === 0 && (
+                <tr className="table-light">
+                  <td colSpan="4" className="text-center mt-4">
+                    Список пуст
+                  </td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </BorderContainer>
