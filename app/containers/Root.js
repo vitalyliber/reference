@@ -3,8 +3,11 @@ import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import { PersistGate } from 'redux-persist/integration/react';
+import { ToastContainer, toast } from 'react-toastify';
 import type { Store } from '../reducers/types';
 import Routes from '../Routes';
+import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
+import '!style-loader!css-loader!react-toastify/dist/ReactToastify.css';
 
 type Props = {
   store: Store,
@@ -21,6 +24,7 @@ export default class Root extends Component<Props> {
           <ConnectedRouter history={history}>
             <Routes />
           </ConnectedRouter>
+          <ToastContainer />
         </PersistGate>
       </Provider>
     );

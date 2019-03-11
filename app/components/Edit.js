@@ -22,10 +22,16 @@ import routes from '../constants/routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
+import { toast } from 'react-toastify';
 
 type Props = {};
 
 export default class Edit extends Component<Props> {
+  constructor(props) {
+    super(props);
+    this.modal = React.createRef();
+  }
+
   props: Props;
 
   state = {
@@ -59,7 +65,10 @@ export default class Edit extends Component<Props> {
     const { addRef } = this.props;
     const { selectedOption } = this.state;
     if (!selectedOption) {
-      return alert('Выберите год');
+      toast.error('Выберите год', {
+        position: toast.POSITION.TOP_CENTER
+      });
+      return;
     }
     const userDataPath = this.userDataPath();
     console.log(userDataPath);
@@ -81,6 +90,11 @@ export default class Edit extends Component<Props> {
         userId,
         year: selectedOption.value
       });
+      toast.success('Файл успешно добавлен', {
+        position: toast.POSITION.TOP_CENTER
+      });
+      this.modal.current.decline();
+      this.setState({ selectedOption: null });
     };
     reader.readAsBinaryString(file);
   };
@@ -150,6 +164,7 @@ export default class Edit extends Component<Props> {
           title="Выберите файл"
           buttonLabel="Загрузить справку"
           action={this.saveFile}
+          ref={this.modal}
         >
           {this.yearInput()}
         </ModalUploader>

@@ -3,10 +3,10 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Table, Breadcrumb, BreadcrumbItem, Button } from 'reactstrap';
+import { Table, Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import XLSX from 'xlsx';
+import { toast } from 'react-toastify';
 import routes from '../constants/routes';
-import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat } from '../utils/dateFormat';
 
@@ -17,7 +17,13 @@ type Props = {
 export default class Home extends Component<Props> {
   props: Props;
 
+  constructor(props) {
+    super(props);
+    this.modal = React.createRef();
+  }
+
   parseData = file => {
+    const errorMsg = 'Попробуйте другой файл';
     const rABS = true;
     const { mergeUsers } = this.props;
     const reader = new FileReader();
@@ -43,22 +49,35 @@ export default class Home extends Component<Props> {
         console.log(json.slice(1));
         const jsonWithoutHeaders = json.slice(1);
         if (typeof jsonWithoutHeaders[0]['id'] !== 'number') {
-          return alert('Попробуйте другой файл');
+          toast.error(errorMsg, {
+            position: toast.POSITION.TOP_CENTER
+          });
+          this.modal.current.clearFile();
+          return;
         }
         mergeUsers(json.slice(1));
       } catch (e) {
-        alert('Попробуйте другой файл');
+        toast.error(errorMsg, {
+          position: toast.POSITION.TOP_CENTER
+        });
+        this.modal.current.clearFile();
+        return;
       }
+      toast.success('Данные успешно синхронизированы', {
+        position: toast.POSITION.TOP_CENTER
+      });
+      this.modal.current.decline();
     };
-    if (rABS) reader.readAsBinaryString(file);
-    else reader.readAsArrayBuffer(file);
+    if (rABS) {
+      reader.readAsBinaryString(file);
+    }
+    reader.readAsArrayBuffer(file);
   };
 
   render() {
     const { users } = this.props;
     return (
       <Container data-tid="container">
-        {/*<Link to={routes.COUNTER}>Counter</Link>*/}
         <Breadcrumb tag="nav" listTag="div">
           <BreadcrumbItem tag="span" active>
             Реестр
@@ -69,6 +88,7 @@ export default class Home extends Component<Props> {
           title="Выберите файл"
           buttonLabel="Импорт списка"
           action={this.parseData}
+          ref={this.modal}
         />
         <BorderContainer>
           <Table responsive hover striped size="sm">

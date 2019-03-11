@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Dropzone from 'react-dropzone';
 import fileExtension from 'file-extension';
+import { toast } from 'react-toastify';
 
 type Props = {
   buttonLabel: string,
@@ -29,22 +30,33 @@ class ModalUploader extends Component<Props> {
 
   handleFile = files => {
     console.log(files);
+    const { acceptedFiles } = this.props;
+    if (`.${fileExtension(files[0] && files[0].name)}` !== acceptedFiles) {
+      return toast.error("Неверный формат файла", {
+        position: toast.POSITION.TOP_CENTER
+      });
+    }
     this.setState({ file: files[0] });
   };
 
   decline = () => {
     this.toggle();
-    this.handleFile([null]);
+    this.clearFile();
   };
+
+  clearFile = () => this.setState({ file: null });
 
   parseData = () => {
     const { file } = this.state;
-    const { action, acceptedFiles } = this.props;
-    if (`.${fileExtension(file.name)}` !== acceptedFiles) {
-      return alert('Неверный формат файла');
+    const { action } = this.props;
+
+    if (!file) {
+      return toast.error('Выберите файл', {
+        position: toast.POSITION.TOP_CENTER
+      });
     }
+
     action(file);
-    this.decline();
   };
 
   render() {
