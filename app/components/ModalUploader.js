@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import Dropzone from 'react-dropzone';
+import fileExtension from 'file-extension';
+import { toast } from 'react-toastify';
 
 type Props = {
   buttonLabel: string,
   title: string,
-  acceptedFiles: string
+  acceptedFiles: string,
+  parseData: () => void
 };
 
 class ModalUploader extends Component<Props> {
@@ -27,16 +30,37 @@ class ModalUploader extends Component<Props> {
 
   handleFile = files => {
     console.log(files);
+    const { acceptedFiles } = this.props;
+    if (`.${fileExtension(files[0] && files[0].name)}` !== acceptedFiles) {
+      return toast.error("Неверный формат файла", {
+        position: toast.POSITION.TOP_CENTER
+      });
+    }
     this.setState({ file: files[0] });
   };
 
   decline = () => {
     this.toggle();
-    this.handleFile([null]);
+    this.clearFile();
+  };
+
+  clearFile = () => this.setState({ file: null });
+
+  parseData = () => {
+    const { file } = this.state;
+    const { action } = this.props;
+
+    if (!file) {
+      return toast.error('Выберите файл', {
+        position: toast.POSITION.TOP_CENTER
+      });
+    }
+
+    action(file);
   };
 
   render() {
-    const { buttonLabel, title, acceptedFiles } = this.props;
+    const { buttonLabel, title, acceptedFiles, children } = this.props;
     const { modal, file } = this.state;
 
     return (
@@ -52,6 +76,7 @@ class ModalUploader extends Component<Props> {
         <Modal isOpen={modal} toggle={this.toggle}>
           <ModalHeader toggle={this.toggle}>{title}</ModalHeader>
           <ModalBody>
+            {children}
             {!file && (
               <Dropzone
                 acceptedFiles={acceptedFiles}
@@ -63,7 +88,7 @@ class ModalUploader extends Component<Props> {
                   <section>
                     <div {...getRootProps()}>
                       <input {...getInputProps()} />
-                      <p className="text-center">Перетащите сюда файл</p>
+                      <p className="text-center">Перетащите сюда файл {acceptedFiles}</p>
                       <p className="text-center">Или кликните, чтобы выбрать</p>
                     </div>
                   </section>
@@ -76,7 +101,7 @@ class ModalUploader extends Component<Props> {
             <Button
               className="text-uppercase"
               color="primary"
-              onClick={this.toggle}
+              onClick={this.parseData}
             >
               Сохранить
             </Button>{' '}

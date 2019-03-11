@@ -14,16 +14,127 @@ import {
   CardSubtitle,
   Badge
 } from 'reactstrap';
+import Select from 'react-select';
+import electron from 'electron';
+import fs from 'fs';
+import nanoid from 'nanoid';
 import routes from '../constants/routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
+import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
+import { toast } from 'react-toastify';
 
 type Props = {};
 
 export default class Edit extends Component<Props> {
+  constructor(props) {
+    super(props);
+    this.modal = React.createRef();
+  }
+
   props: Props;
 
+  state = {
+    selectedOption: null
+  };
+
+  handleChange = selectedOption => {
+    this.setState({ selectedOption });
+    console.log(`Option selected:`, selectedOption);
+  };
+
+  yearInput = () => {
+    const { selectedOption } = this.state;
+    const options = getListOfYears().map(el => ({
+      value: el,
+      label: el
+    }));
+    return (
+      <WrappedSelect
+        value={selectedOption}
+        onChange={this.handleChange}
+        options={options}
+      />
+    );
+  };
+
+  userDataPath = () =>
+    (electron.app || electron.remote.app).getPath('userData');
+
+  saveFile = file => {
+    const { addRef } = this.props;
+    const { selectedOption } = this.state;
+    if (!selectedOption) {
+      toast.error('Выберите год', {
+        position: toast.POSITION.TOP_CENTER
+      });
+      return;
+    }
+    const userDataPath = this.userDataPath();
+    console.log(userDataPath);
+    const reader = new FileReader();
+    reader.onload = f => {
+      const data = f.target.result;
+      const id = nanoid();
+      const {
+        location: {
+          state: { id: userId }
+        }
+      } = this.props;
+      if (!fs.existsSync(`${userDataPath}/refs`)) {
+        fs.mkdirSync(`${userDataPath}/refs`);
+      }
+      fs.writeFileSync(`${userDataPath}/refs/${id}.xsb`, data, 'binary');
+      addRef({
+        id,
+        userId,
+        year: selectedOption.value
+      });
+      toast.success('Файл успешно добавлен', {
+        position: toast.POSITION.TOP_CENTER
+      });
+      this.modal.current.decline();
+      this.setState({ selectedOption: null });
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  removeFile = el => {
+    const { removeRef } = this.props;
+    const userDataPath = this.userDataPath();
+    try {
+      fs.unlinkSync(`${userDataPath}/refs/${el.id}.xsb`);
+    } catch (e) {
+      console.log(e);
+    }
+    removeRef(el);
+  };
+
+  downloadFile = el => {
+    const {
+      location: { state }
+    } = this.props;
+    const desktopPath = electron.remote.app.getPath('desktop');
+    const userChosenPath = electron.remote.dialog.showSaveDialog({
+      defaultPath: `${desktopPath}/${state.family}_${state.name}_${
+        state.patronymic
+      }_${el.year}.xsb`
+    });
+    const userDataPath = this.userDataPath();
+    if (userChosenPath) {
+      fs.copyFile(`${userDataPath}/refs/${el.id}.xsb`, userChosenPath, err => {
+        if (err) throw err;
+        console.log('copied successfully');
+      });
+    }
+  };
+
   render() {
+    const {
+      location: { state },
+      references
+    } = this.props;
+
     return (
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
@@ -37,21 +148,26 @@ export default class Edit extends Component<Props> {
         <Card className="mb-3">
           <CardBody>
             <CardTitle>
-              Иванов Иван Иванович
+              {`${state.family} ${state.name} ${state.patronymic}`}
               <Badge className="ml-1" color="primary">
-                01.01.1970
+                {tableDateFormat(state.birthday)}
               </Badge>
             </CardTitle>
-            <CardSubtitle>ИНН: 333344442222</CardSubtitle>
-            <CardSubtitle>Тип реестра: РГГС</CardSubtitle>
-            <CardText>Помощник</CardText>
+            <CardSubtitle>ИНН: {state.taxpayerNumber}</CardSubtitle>
+            <CardSubtitle>Тип реестра: {state.registryType}</CardSubtitle>
+            <CardText>{state.position}</CardText>
           </CardBody>
         </Card>
+
         <ModalUploader
           acceptedFiles=".xsb"
           title="Выберите файл"
           buttonLabel="Загрузить справку"
-        />
+          action={this.saveFile}
+          ref={this.modal}
+        >
+          {this.yearInput()}
+        </ModalUploader>
         <BorderContainer>
           <Table responsive hover striped size="sm">
             <thead>
@@ -63,20 +179,36 @@ export default class Edit extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td>2018</td>
-                <td>
-                  <Link to={`${routes.EDIT}`}>
-                    <FontAwesomeIcon icon="file" />
-                  </Link>
-                </td>
-                <td>
-                  <Link to={`${routes.EDIT}`}>
-                    <FontAwesomeIcon icon="trash" />
-                  </Link>
-                </td>
-              </tr>
+              {references
+                .filter(el => el.userId === state.id)
+                .map((el, index) => (
+                  <tr key={el.id}>
+                    <th scope="row">{index + 1}</th>
+                    <td>{el.year}</td>
+                    <td>
+                      <a
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          this.downloadFile(el);
+                        }}
+                      >
+                        <FontAwesomeIcon icon="file" />
+                      </a>
+                    </td>
+                    <td>
+                      <a
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          this.removeFile(el);
+                        }}
+                      >
+                        <FontAwesomeIcon icon="trash" />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </BorderContainer>
@@ -92,4 +224,8 @@ const Container = styled.div`
 const BorderContainer = styled.div`
   border: solid #f7f7f9;
   border-width: 0.2rem;
+`;
+
+const WrappedSelect = styled(Select)`
+  margin-bottom: 15px;
 `;
