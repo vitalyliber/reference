@@ -17,6 +17,7 @@ import {
 import Select from 'react-select';
 import electron from 'electron';
 import fs from 'fs';
+import nanoid from 'nanoid';
 import routes from '../constants/routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
@@ -51,22 +52,73 @@ export default class Edit extends Component<Props> {
     );
   };
 
+  userDataPath = () =>
+    (electron.app || electron.remote.app).getPath('userData');
+
   saveFile = file => {
-    const userDataPath = (electron.app || electron.remote.app).getPath(
-      'userData'
-    );
+    const { addRef } = this.props;
+    const { selectedOption } = this.state;
+    if (!selectedOption) {
+      return alert('Выберите год');
+    }
+    const userDataPath = this.userDataPath();
     console.log(userDataPath);
     const reader = new FileReader();
     reader.onload = f => {
       const data = f.target.result;
-      fs.writeFileSync(`${userDataPath}/test.xsb`, data, 'binary');
+      const id = nanoid();
+      const {
+        location: {
+          state: { id: userId }
+        }
+      } = this.props;
+      if (!fs.existsSync(`${userDataPath}/refs`)) {
+        fs.mkdirSync(`${userDataPath}/refs`);
+      }
+      fs.writeFileSync(`${userDataPath}/refs/${id}.xsb`, data, 'binary');
+      addRef({
+        id,
+        userId,
+        year: selectedOption.value
+      });
     };
     reader.readAsBinaryString(file);
   };
 
-  render() {
+  removeFile = el => {
+    const { removeRef } = this.props;
+    const userDataPath = this.userDataPath();
+    try {
+      fs.unlinkSync(`${userDataPath}/refs/${el.id}.xsb`);
+    } catch (e) {
+      console.log(e);
+    }
+    removeRef(el);
+  };
+
+  downloadFile = el => {
     const {
       location: { state }
+    } = this.props;
+    const desktopPath = electron.remote.app.getPath('desktop');
+    const userChosenPath = electron.remote.dialog.showSaveDialog({
+      defaultPath: `${desktopPath}/${state.family}_${state.name}_${
+        state.patronymic
+      }_${el.year}.xsb`
+    });
+    const userDataPath = this.userDataPath();
+    if (userChosenPath) {
+      fs.copyFile(`${userDataPath}/refs/${el.id}.xsb`, userChosenPath, err => {
+        if (err) throw err;
+        console.log('copied successfully');
+      });
+    }
+  };
+
+  render() {
+    const {
+      location: { state },
+      references
     } = this.props;
 
     return (
@@ -112,20 +164,36 @@ export default class Edit extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td>2018</td>
-                <td>
-                  <Link to={`${routes.EDIT}`}>
-                    <FontAwesomeIcon icon="file" />
-                  </Link>
-                </td>
-                <td>
-                  <Link to={`${routes.EDIT}`}>
-                    <FontAwesomeIcon icon="trash" />
-                  </Link>
-                </td>
-              </tr>
+              {references
+                .filter(el => el.userId === state.id)
+                .map((el, index) => (
+                  <tr key={el.id}>
+                    <th scope="row">{index + 1}</th>
+                    <td>{el.year}</td>
+                    <td>
+                      <a
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          this.downloadFile(el);
+                        }}
+                      >
+                        <FontAwesomeIcon icon="file" />
+                      </a>
+                    </td>
+                    <td>
+                      <a
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          this.removeFile(el);
+                        }}
+                      >
+                        <FontAwesomeIcon icon="trash" />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </BorderContainer>
