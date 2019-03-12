@@ -1,15 +1,12 @@
 // @flow
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
-import routes from '../constants/routes';
 import ModalUploader from './ModalUploader';
-import { tableDateFormat } from '../utils/dateFormat';
+import referenceTail from './referenceTail';
 
 type Props = {
   users: [],
@@ -152,7 +149,7 @@ export default class Home extends Component<Props> {
 
   render() {
     let visibleUsers;
-    const { users } = this.props;
+    const { users, references } = this.props;
     const { searchInput } = this.state;
 
     if (!_.isEmpty(searchInput)) {
@@ -191,7 +188,6 @@ export default class Home extends Component<Props> {
           <Table responsive hover striped size="sm">
             <thead>
               <tr>
-                <th>#</th>
                 <th>Фамилия</th>
                 <th>Имя</th>
                 <th>Отчество</th>
@@ -203,26 +199,7 @@ export default class Home extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              {visibleUsers.map((el, index) => {
-                const [lastPeriod, hasPeriod] = this.lastPeriod(el.id);
-                return (
-                  <tr key={el.id}>
-                    <th scope="row">{index + 1}</th>
-                    <td className="text-capitalize">{el.lastName}</td>
-                    <td className="text-capitalize">{el.name}</td>
-                    <td className="text-capitalize">{el.patronymic}</td>
-                    <td>{tableDateFormat(el.birthday)}</td>
-                    <td>{el.position}</td>
-                    <td>{lastPeriod}</td>
-                    <td>{hasPeriod ? 'Да' : 'Нет'}</td>
-                    <td>
-                      <Link to={{ pathname: routes.EDIT, state: { ...el } }}>
-                        <FontAwesomeIcon icon="edit" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
+              {visibleUsers.map((el) => referenceTail({ el, references }))}
               {visibleUsers.length === 0 && (
                 <tr className="table-light">
                   <td colSpan="9" className="text-center mt-4">
