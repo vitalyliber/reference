@@ -184,7 +184,7 @@ export default class Home extends Component<Props> {
         <WrappedInput
           type="search"
           name="search"
-          placeholder="Поиск по ФИО и ИНН"
+          placeholder="Поиск по ФИО"
           onChange={this.toggleSearchInput}
         />
         <BorderContainer>
