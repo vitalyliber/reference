@@ -18,6 +18,7 @@ type Props = {
 export default class Root extends Component<Props> {
   render() {
     const { store, history, persistor } = this.props;
+
     return (
       <Provider store={store}>
         <PersistGate persistor={persistor}>

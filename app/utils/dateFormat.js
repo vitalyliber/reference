@@ -1,10 +1,14 @@
 import SSF from 'ssf';
+import _ from 'lodash';
 
-export const tableDateFormat = val =>
-  `${SSF.format('DD', val)}.${SSF.format('mm', val)}.${SSF.format(
+export const tableDateFormat = val => {
+  if (_.isEmpty(val)) return '-';
+
+  return `${SSF.format('DD', val)}.${SSF.format('mm', val)}.${SSF.format(
     'yyyy',
     val
   )}`;
+};
 
 export const getListOfYears = (startYear, endYear) => {
   var currentYear = endYear || new Date().getFullYear() + 2,
