@@ -3,12 +3,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import fileExtension from 'file-extension';
 import {
   Table,
   Breadcrumb,
   BreadcrumbItem,
   Card,
-  CardText,
   CardBody,
   CardTitle,
   CardSubtitle,
@@ -63,6 +63,7 @@ export default class Edit extends Component<Props> {
 
   saveFile = file => {
     const { addRef } = this.props;
+    const extension = fileExtension(file.name);
     const { selectedOption } = this.state;
     if (!selectedOption) {
       toast.error('Выберите год', {
@@ -84,10 +85,11 @@ export default class Edit extends Component<Props> {
       if (!fs.existsSync(`${userDataPath}/refs`)) {
         fs.mkdirSync(`${userDataPath}/refs`);
       }
-      fs.writeFileSync(`${userDataPath}/refs/${id}.xsb`, data, 'binary');
+      fs.writeFileSync(`${userDataPath}/refs/${id}.${extension}`, data, 'binary');
       addRef({
         id,
         userId,
+        extension,
         year: selectedOption.value
       });
       toast.success('Файл успешно добавлен', {
@@ -103,7 +105,7 @@ export default class Edit extends Component<Props> {
     const { removeRef } = this.props;
     const userDataPath = this.userDataPath();
     try {
-      fs.unlinkSync(`${userDataPath}/refs/${el.id}.xsb`);
+      fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
     } catch (e) {
       console.log(e);
     }
@@ -118,11 +120,11 @@ export default class Edit extends Component<Props> {
     const userChosenPath = electron.remote.dialog.showSaveDialog({
       defaultPath: `${desktopPath}/${state.lastName}_${state.name}_${
         state.patronymic
-      }_${el.year}.xsb`
+      }_${el.year}.${el.extension}`
     });
     const userDataPath = this.userDataPath();
     if (userChosenPath) {
-      fs.copyFile(`${userDataPath}/refs/${el.id}.xsb`, userChosenPath, err => {
+      fs.copyFile(`${userDataPath}/refs/${el.id}.${el.extension}`, userChosenPath, err => {
         if (err) throw err;
         console.log('copied successfully');
       });
@@ -170,7 +172,7 @@ export default class Edit extends Component<Props> {
         </Card>
 
         <ModalUploader
-          acceptedFiles=".xsb"
+          acceptedFiles={['xsb', 'xlsx', 'pdf', 'doc', 'docx']}
           title="Выберите файл"
           buttonLabel="Загрузить справку"
           action={this.saveFile}

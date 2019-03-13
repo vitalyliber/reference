@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Badge
+} from 'reactstrap';
 import Dropzone from 'react-dropzone';
 import fileExtension from 'file-extension';
 import { toast } from 'react-toastify';
@@ -31,8 +38,8 @@ class ModalUploader extends Component<Props> {
   handleFile = files => {
     console.log(files);
     const { acceptedFiles } = this.props;
-    if (`.${fileExtension(files[0] && files[0].name)}` !== acceptedFiles) {
-      return toast.error("Неверный формат файла", {
+    if (!acceptedFiles.includes(fileExtension(files[0] && files[0].name))) {
+      return toast.error('Неверный формат файла', {
         position: toast.POSITION.TOP_CENTER
       });
     }
@@ -78,17 +85,21 @@ class ModalUploader extends Component<Props> {
           <ModalBody>
             {children}
             {!file && (
-              <Dropzone
-                acceptedFiles={acceptedFiles}
-                multiple={false}
-                maxFiles={1}
-                onDrop={this.handleFile}
-              >
+              <Dropzone multiple={false} maxFiles={1} onDrop={this.handleFile}>
                 {({ getRootProps, getInputProps }) => (
                   <section>
                     <div {...getRootProps()}>
                       <input {...getInputProps()} />
-                      <p className="text-center">Перетащите сюда файл {acceptedFiles}</p>
+                      <p className="text-center mb-1">
+                        Перетащите сюда файл в формат{acceptedFiles.length === 1 ? 'е' : 'ах'}
+                      </p>
+                      <div className="d-flex justify-content-center">
+                        {acceptedFiles.map(extension => (
+                          <Badge key={extension} className="ml-1" color="info">
+                            {extension}
+                          </Badge>
+                        ))}
+                      </div>
                       <p className="text-center">Или кликните, чтобы выбрать</p>
                     </div>
                   </section>

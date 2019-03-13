@@ -29,8 +29,8 @@ export default class Home extends Component<Props> {
   generateTableId = ({ lastName, name, patronymic }) =>
     `${lastName}_${name}_${patronymic}`;
 
-  generateLine = (lineParams) => {
-    const splitName = text => (text.replace(/\s{2,}/g, ' ').toLowerCase());
+  generateLine = lineParams => {
+    const splitName = text => text.replace(/\s{2,}/g, ' ').toLowerCase();
 
     const { position, region, regionId, users, fullName } = lineParams;
     const [lastName, name, patronymic] = splitName(fullName).split(' ');
@@ -54,36 +54,62 @@ export default class Home extends Component<Props> {
     });
   };
 
-  processLine = (lineParams) => {
+  processLine = lineParams => {
     const { line } = lineParams;
 
     const fullNames = line.split('\n');
     if (fullNames.length > 1) {
       fullNames.forEach(fullName => {
-        this.generateLine({ ...lineParams, fullName })
+        this.generateLine({ ...lineParams, fullName });
       });
     }
     if (fullNames.length === 1) {
-      this.generateLine({ ...lineParams, fullName: fullNames[0] })
+      this.generateLine({ ...lineParams, fullName: fullNames[0] });
     }
   };
 
   processTable = list => {
     const users = [];
-    list.forEach(({ __EMPTY, __EMPTY_1, __EMPTY_2, __EMPTY_4, __EMPTY_6, __EMPTY_8 }) => {
-      if (!_.isEmpty(__EMPTY_2)) {
-        this.processLine({ line: __EMPTY_2, position: 'Глава', region: __EMPTY_1, regionId: __EMPTY, users });
+    list.forEach(
+      ({ __EMPTY, __EMPTY_1, __EMPTY_2, __EMPTY_4, __EMPTY_6, __EMPTY_8 }) => {
+        if (!_.isEmpty(__EMPTY_2)) {
+          this.processLine({
+            line: __EMPTY_2,
+            position: 'Глава',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
+        if (!_.isEmpty(__EMPTY_4)) {
+          this.processLine({
+            line: __EMPTY_4,
+            position: 'Совет депутатов',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
+        if (!_.isEmpty(__EMPTY_6)) {
+          this.processLine({
+            line: __EMPTY_6,
+            position: 'Контрольно-счетный орган',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
+        if (!_.isEmpty(__EMPTY_8)) {
+          this.processLine({
+            line: __EMPTY_8,
+            position: 'Избирательная комиссия',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
       }
-      if (!_.isEmpty(__EMPTY_4)) {
-        this.processLine({ line: __EMPTY_4, position: 'Совет депутатов', region: __EMPTY_1, regionId: __EMPTY, users });
-      }
-      if (!_.isEmpty(__EMPTY_6)) {
-        this.processLine({ line: __EMPTY_6, position: 'Контрольно-счетный орган', region: __EMPTY_1, regionId: __EMPTY, users });
-      }
-      if (!_.isEmpty(__EMPTY_8)) {
-        this.processLine({ line: __EMPTY_8, position: 'Избирательная комиссия', region: __EMPTY_1, regionId: __EMPTY, users });
-      }
-    });
+    );
     return users;
   };
 
@@ -172,7 +198,7 @@ export default class Home extends Component<Props> {
           </BreadcrumbItem>
         </Breadcrumb>
         <ModalUploader
-          acceptedFiles=".xlsx"
+          acceptedFiles={['xlsx']}
           title="Выберите файл"
           buttonLabel="Импорт списка"
           action={this.parseData}
@@ -199,7 +225,7 @@ export default class Home extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              {visibleUsers.map((el) => referenceTail({ el, references }))}
+              {visibleUsers.map(el => referenceTail({ el, references }))}
               {visibleUsers.length === 0 && (
                 <tr className="table-light">
                   <td colSpan="9" className="text-center mt-4">
