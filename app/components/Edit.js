@@ -116,7 +116,7 @@ export default class Edit extends Component<Props> {
     } = this.props;
     const desktopPath = electron.remote.app.getPath('desktop');
     const userChosenPath = electron.remote.dialog.showSaveDialog({
-      defaultPath: `${desktopPath}/${state.family}_${state.name}_${
+      defaultPath: `${desktopPath}/${state.lastName}_${state.name}_${
         state.patronymic
       }_${el.year}.xsb`
     });
@@ -149,15 +149,23 @@ export default class Edit extends Component<Props> {
         </Breadcrumb>
         <Card className="mb-3">
           <CardBody>
-            <CardTitle>
-              {`${state.family} ${state.name} ${state.patronymic}`}
-              <Badge className="ml-1" color="primary">
-                {tableDateFormat(state.birthday)}
+            <CardTitle className="text-capitalize">
+              {`${state.lastName} ${state.name} ${state.patronymic}`}
+              {state.birthday && (
+                <Badge className="ml-1" color="primary">
+                  {tableDateFormat(state.birthday)}
+                </Badge>
+              )}
+              <Badge className="ml-1" color="info">
+                {state.position}
               </Badge>
             </CardTitle>
-            <CardSubtitle>ИНН: {state.taxpayerNumber}</CardSubtitle>
-            <CardSubtitle>Тип реестра: {state.registryType}</CardSubtitle>
-            <CardText>{state.position}</CardText>
+            {state.taxpayerNumber && (
+              <CardSubtitle>ИНН: {state.taxpayerNumber}</CardSubtitle>
+            )}
+            {state.registryType && (
+              <CardSubtitle>Тип реестра: {state.registryType}</CardSubtitle>
+            )}
           </CardBody>
         </Card>
 

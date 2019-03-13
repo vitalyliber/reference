@@ -1,15 +1,12 @@
 // @flow
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
-import routes from '../constants/routes';
 import ModalUploader from './ModalUploader';
-import { tableDateFormat } from '../utils/dateFormat';
+import referenceTail from './referenceTail';
 
 type Props = {
   users: [],
@@ -29,6 +26,67 @@ export default class Home extends Component<Props> {
     searchInput: ''
   };
 
+  generateTableId = ({ lastName, name, patronymic }) =>
+    `${lastName}_${name}_${patronymic}`;
+
+  generateLine = (lineParams) => {
+    const splitName = text => (text.replace(/\s{2,}/g, ' ').toLowerCase());
+
+    const { position, region, regionId, users, fullName } = lineParams;
+    const [lastName, name, patronymic] = splitName(fullName).split(' ');
+    if (_.isEmpty(name) || _.isEmpty(patronymic)) return;
+    const id = this.generateTableId({
+      lastName,
+      name,
+      patronymic
+    });
+    users.push({
+      id,
+      region,
+      regionId,
+      lastName,
+      name,
+      patronymic,
+      birthday: null,
+      position,
+      registryType: '',
+      taxpayerNumber: ''
+    });
+  };
+
+  processLine = (lineParams) => {
+    const { line } = lineParams;
+
+    const fullNames = line.split('\n');
+    if (fullNames.length > 1) {
+      fullNames.forEach(fullName => {
+        this.generateLine({ ...lineParams, fullName })
+      });
+    }
+    if (fullNames.length === 1) {
+      this.generateLine({ ...lineParams, fullName: fullNames[0] })
+    }
+  };
+
+  processTable = list => {
+    const users = [];
+    list.forEach(({ __EMPTY, __EMPTY_1, __EMPTY_2, __EMPTY_4, __EMPTY_6, __EMPTY_8 }) => {
+      if (!_.isEmpty(__EMPTY_2)) {
+        this.processLine({ line: __EMPTY_2, position: 'Глава', region: __EMPTY_1, regionId: __EMPTY, users });
+      }
+      if (!_.isEmpty(__EMPTY_4)) {
+        this.processLine({ line: __EMPTY_4, position: 'Совет депутатов', region: __EMPTY_1, regionId: __EMPTY, users });
+      }
+      if (!_.isEmpty(__EMPTY_6)) {
+        this.processLine({ line: __EMPTY_6, position: 'Контрольно-счетный орган', region: __EMPTY_1, regionId: __EMPTY, users });
+      }
+      if (!_.isEmpty(__EMPTY_8)) {
+        this.processLine({ line: __EMPTY_8, position: 'Избирательная комиссия', region: __EMPTY_1, regionId: __EMPTY, users });
+      }
+    });
+    return users;
+  };
+
   parseData = file => {
     const errorMsg = 'Попробуйте другой файл';
     const rABS = true;
@@ -41,29 +99,22 @@ export default class Home extends Component<Props> {
         const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
         const ws = workbook.Sheets['Лист1'];
         console.log('WorkSheet', ws);
-        const json = XLSX.utils.sheet_to_json(ws, {
-          header: [
-            'id',
-            'family',
-            'name',
-            'patronymic',
-            'birthday',
-            'position',
-            'registryType',
-            'taxpayerNumber'
-          ]
-        });
-        console.log(json.slice(1));
-        const jsonWithoutHeaders = json.slice(1);
-        if (typeof jsonWithoutHeaders[0]['id'] !== 'number') {
+        const json = XLSX.utils.sheet_to_json(ws);
+        console.log('JSON', json);
+        const jsonWithoutHeaders = json.slice(2);
+        console.log('jsonWithoutHeaders', jsonWithoutHeaders);
+        if (typeof jsonWithoutHeaders[0]['__EMPTY'] !== 'number') {
           toast.error(errorMsg, {
             position: toast.POSITION.TOP_CENTER
           });
           this.modal.current.clearFile();
           return;
         }
-        mergeUsers(json.slice(1));
+        const users = this.processTable(jsonWithoutHeaders);
+        console.log('USERS', users);
+        mergeUsers(users);
       } catch (e) {
+        console.log(e);
         toast.error(errorMsg, {
           position: toast.POSITION.TOP_CENTER
         });
@@ -98,14 +149,14 @@ export default class Home extends Component<Props> {
 
   render() {
     let visibleUsers;
-    const { users } = this.props;
+    const { users, references } = this.props;
     const { searchInput } = this.state;
 
     if (!_.isEmpty(searchInput)) {
       const loverCaseSearchInput = searchInput.toLowerCase();
       visibleUsers = users.filter(
-        ({ name, family, patronymic, taxpayerNumber }) =>
-          `${family} ${name} ${patronymic} ${taxpayerNumber}`
+        ({ name, lastName, patronymic, taxpayerNumber }) =>
+          `${lastName} ${name} ${patronymic} ${taxpayerNumber}`
             .toLowerCase()
             .search(loverCaseSearchInput) !== -1
       );
@@ -130,47 +181,25 @@ export default class Home extends Component<Props> {
         <WrappedInput
           type="search"
           name="search"
-          placeholder="Поиск по ФИО и ИНН"
+          placeholder="Поиск по ФИО"
           onChange={this.toggleSearchInput}
         />
         <BorderContainer>
           <Table responsive hover striped size="sm">
             <thead>
               <tr>
-                <th>#</th>
                 <th>Фамилия</th>
                 <th>Имя</th>
                 <th>Отчество</th>
                 <th>ГР</th>
                 <th>Должность</th>
-                <th>Тип</th>
                 <th>Период</th>
                 <th>Справка</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              {visibleUsers.map(el => {
-                const [lastPeriod, hasPeriod] = this.lastPeriod(el.id);
-                return (
-                  <tr key={el.id}>
-                    <th scope="row">{el.id}</th>
-                    <td>{el.family}</td>
-                    <td>{el.name}</td>
-                    <td>{el.patronymic}</td>
-                    <td>{tableDateFormat(el.birthday)}</td>
-                    <td>{el.position}</td>
-                    <td>{el.registryType}</td>
-                    <td>{lastPeriod}</td>
-                    <td>{hasPeriod ? 'Да' : 'Нет'}</td>
-                    <td>
-                      <Link to={{ pathname: routes.EDIT, state: { ...el } }}>
-                        <FontAwesomeIcon icon="edit" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
+              {visibleUsers.map((el) => referenceTail({ el, references }))}
               {visibleUsers.length === 0 && (
                 <tr className="table-light">
                   <td colSpan="9" className="text-center mt-4">
