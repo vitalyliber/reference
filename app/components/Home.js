@@ -5,6 +5,8 @@ import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
+import TableFilter from 'react-table-filter';
+import '!style-loader!css-loader!react-table-filter/lib/styles.css';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
 
@@ -20,17 +22,20 @@ export default class Home extends Component<Props> {
   constructor(props) {
     super(props);
     this.modal = React.createRef();
+    const { users } = props;
+    this.state = {
+      searchInput: '',
+      users,
+      filteredUsers: users
+    };
+    this.tableFilter = React.createRef();
   }
-
-  state = {
-    searchInput: ''
-  };
 
   generateTableId = ({ lastName, name, patronymic }) =>
     `${lastName}_${name}_${patronymic}`;
 
-  generateLine = (lineParams) => {
-    const splitName = text => (text.replace(/\s{2,}/g, ' ').toLowerCase());
+  generateLine = lineParams => {
+    const splitName = text => text.replace(/\s{2,}/g, ' ').toLowerCase();
 
     const { position, region, regionId, users, fullName } = lineParams;
     const [lastName, name, patronymic] = splitName(fullName).split(' ');
@@ -54,36 +59,62 @@ export default class Home extends Component<Props> {
     });
   };
 
-  processLine = (lineParams) => {
+  processLine = lineParams => {
     const { line } = lineParams;
 
     const fullNames = line.split('\n');
     if (fullNames.length > 1) {
       fullNames.forEach(fullName => {
-        this.generateLine({ ...lineParams, fullName })
+        this.generateLine({ ...lineParams, fullName });
       });
     }
     if (fullNames.length === 1) {
-      this.generateLine({ ...lineParams, fullName: fullNames[0] })
+      this.generateLine({ ...lineParams, fullName: fullNames[0] });
     }
   };
 
   processTable = list => {
     const users = [];
-    list.forEach(({ __EMPTY, __EMPTY_1, __EMPTY_2, __EMPTY_4, __EMPTY_6, __EMPTY_8 }) => {
-      if (!_.isEmpty(__EMPTY_2)) {
-        this.processLine({ line: __EMPTY_2, position: 'Глава', region: __EMPTY_1, regionId: __EMPTY, users });
+    list.forEach(
+      ({ __EMPTY, __EMPTY_1, __EMPTY_2, __EMPTY_4, __EMPTY_6, __EMPTY_8 }) => {
+        if (!_.isEmpty(__EMPTY_2)) {
+          this.processLine({
+            line: __EMPTY_2,
+            position: 'Глава',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
+        if (!_.isEmpty(__EMPTY_4)) {
+          this.processLine({
+            line: __EMPTY_4,
+            position: 'Совет депутатов',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
+        if (!_.isEmpty(__EMPTY_6)) {
+          this.processLine({
+            line: __EMPTY_6,
+            position: 'Контрольно-счетный орган',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
+        if (!_.isEmpty(__EMPTY_8)) {
+          this.processLine({
+            line: __EMPTY_8,
+            position: 'Избирательная комиссия',
+            region: __EMPTY_1,
+            regionId: __EMPTY,
+            users
+          });
+        }
       }
-      if (!_.isEmpty(__EMPTY_4)) {
-        this.processLine({ line: __EMPTY_4, position: 'Совет депутатов', region: __EMPTY_1, regionId: __EMPTY, users });
-      }
-      if (!_.isEmpty(__EMPTY_6)) {
-        this.processLine({ line: __EMPTY_6, position: 'Контрольно-счетный орган', region: __EMPTY_1, regionId: __EMPTY, users });
-      }
-      if (!_.isEmpty(__EMPTY_8)) {
-        this.processLine({ line: __EMPTY_8, position: 'Избирательная комиссия', region: __EMPTY_1, regionId: __EMPTY, users });
-      }
-    });
+    );
     return users;
   };
 
@@ -113,6 +144,8 @@ export default class Home extends Component<Props> {
         const users = this.processTable(jsonWithoutHeaders);
         console.log('USERS', users);
         mergeUsers(users);
+        this.setState({ users, filteredUsers: users });
+        this.tableFilter.current.reset(users)
       } catch (e) {
         console.log(e);
         toast.error(errorMsg, {
@@ -147,21 +180,28 @@ export default class Home extends Component<Props> {
     this.setState({ searchInput: event.target.value });
   };
 
+  filterUpdated = (filteredUsers, filterConfiguration) => {
+    console.log(filteredUsers);
+    this.setState({
+      filteredUsers
+    });
+  };
+
   render() {
     let visibleUsers;
-    const { users, references } = this.props;
-    const { searchInput } = this.state;
+    const { references } = this.props;
+    let { searchInput, users, filteredUsers } = this.state;
 
     if (!_.isEmpty(searchInput)) {
       const loverCaseSearchInput = searchInput.toLowerCase();
-      visibleUsers = users.filter(
+      visibleUsers = filteredUsers.filter(
         ({ name, lastName, patronymic, taxpayerNumber }) =>
           `${lastName} ${name} ${patronymic} ${taxpayerNumber}`
             .toLowerCase()
             .search(loverCaseSearchInput) !== -1
       );
     } else {
-      visibleUsers = users;
+      visibleUsers = filteredUsers;
     }
 
     return (
@@ -172,7 +212,7 @@ export default class Home extends Component<Props> {
           </BreadcrumbItem>
         </Breadcrumb>
         <ModalUploader
-          acceptedFiles=".xlsx"
+          acceptedFiles={['xlsx']}
           title="Выберите файл"
           buttonLabel="Импорт списка"
           action={this.parseData}
@@ -185,21 +225,25 @@ export default class Home extends Component<Props> {
           onChange={this.toggleSearchInput}
         />
         <BorderContainer>
-          <Table responsive hover striped size="sm">
+          <Table hover striped size="sm">
             <thead>
-              <tr>
-                <th>Фамилия</th>
-                <th>Имя</th>
-                <th>Отчество</th>
-                <th>ГР</th>
-                <th>Должность</th>
+              <TableFilter
+                ref={this.tableFilter}
+                rows={users}
+                onFilterUpdate={this.filterUpdated}
+              >
+                <th filterkey="region">МО</th>
+                <th filterkey="lastName">Фамилия</th>
+                <th filterkey="name">Имя</th>
+                <th filterkey="patronymic">Отчество</th>
+                <th filterkey="position">Должность</th>
                 <th>Период</th>
                 <th>Справка</th>
                 <th />
-              </tr>
+              </TableFilter>
             </thead>
             <tbody>
-              {visibleUsers.map((el) => referenceTail({ el, references }))}
+              {visibleUsers.map(el => referenceTail({ el, references }))}
               {visibleUsers.length === 0 && (
                 <tr className="table-light">
                   <td colSpan="9" className="text-center mt-4">
