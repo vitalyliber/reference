@@ -11134,10 +11134,9 @@ react-select@^2.4.1:
     react-input-autosize "^2.2.1"
     react-transition-group "^2.2.1"
 
-react-table-filter@^1.1.5:
+react-table-filter@vitalyliber/react-table-filter#0480790ebbf49f7d966c80a13f50b849e68218ee:
   version "1.1.5"
-  resolved "https://registry.yarnpkg.com/react-table-filter/-/react-table-filter-1.1.5.tgz#de6993178e8f90a7fb3b2dc6d5771dc947d459c1"
-  integrity sha512-fKOG6exGHDLWTuXeeAXxTFIj+XSTADOqWDn5DbC4UxPXhW0CPNY6JiCjGJaqXB3dKF6yaBFpU1x8KqlWYdh8cA==
+  resolved "https://codeload.github.com/vitalyliber/react-table-filter/tar.gz/0480790ebbf49f7d966c80a13f50b849e68218ee"
   dependencies:
     prop-types "^15.6.0"
 

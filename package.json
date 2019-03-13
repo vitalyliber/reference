@@ -278,7 +278,7 @@
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-select": "^2.4.1",
-    "react-table-filter": "^1.1.5",
+    "react-table-filter": "vitalyliber/react-table-filter#0480790ebbf49f7d966c80a13f50b849e68218ee",
     "react-toastify": "^4.5.2",
     "reactstrap": "^7.1.0",
     "redux": "^4.0.1",
