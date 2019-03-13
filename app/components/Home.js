@@ -5,6 +5,8 @@ import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
+import TableFilter from 'react-table-filter';
+import '!style-loader!css-loader!react-table-filter/lib/styles.css';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
 
@@ -20,11 +22,14 @@ export default class Home extends Component<Props> {
   constructor(props) {
     super(props);
     this.modal = React.createRef();
+    const { users } = props;
+    this.state = {
+      searchInput: '',
+      users,
+      filteredUsers: users
+    };
+    this.tableFilter = React.createRef();
   }
-
-  state = {
-    searchInput: ''
-  };
 
   generateTableId = ({ lastName, name, patronymic }) =>
     `${lastName}_${name}_${patronymic}`;
@@ -139,6 +144,8 @@ export default class Home extends Component<Props> {
         const users = this.processTable(jsonWithoutHeaders);
         console.log('USERS', users);
         mergeUsers(users);
+        this.setState({ users, filteredUsers: users });
+        this.tableFilter.current.reset(users)
       } catch (e) {
         console.log(e);
         toast.error(errorMsg, {
@@ -173,21 +180,28 @@ export default class Home extends Component<Props> {
     this.setState({ searchInput: event.target.value });
   };
 
+  filterUpdated = (filteredUsers, filterConfiguration) => {
+    console.log(filteredUsers);
+    this.setState({
+      filteredUsers
+    });
+  };
+
   render() {
     let visibleUsers;
-    const { users, references } = this.props;
-    const { searchInput } = this.state;
+    const { references } = this.props;
+    let { searchInput, users, filteredUsers } = this.state;
 
     if (!_.isEmpty(searchInput)) {
       const loverCaseSearchInput = searchInput.toLowerCase();
-      visibleUsers = users.filter(
+      visibleUsers = filteredUsers.filter(
         ({ name, lastName, patronymic, taxpayerNumber }) =>
           `${lastName} ${name} ${patronymic} ${taxpayerNumber}`
             .toLowerCase()
             .search(loverCaseSearchInput) !== -1
       );
     } else {
-      visibleUsers = users;
+      visibleUsers = filteredUsers;
     }
 
     return (
@@ -211,18 +225,22 @@ export default class Home extends Component<Props> {
           onChange={this.toggleSearchInput}
         />
         <BorderContainer>
-          <Table responsive hover striped size="sm">
+          <Table hover striped size="sm">
             <thead>
-              <tr>
-                <th>Фамилия</th>
-                <th>Имя</th>
-                <th>Отчество</th>
-                <th>ГР</th>
-                <th>Должность</th>
+              <TableFilter
+                ref={this.tableFilter}
+                rows={users}
+                onFilterUpdate={this.filterUpdated}
+              >
+                <th filterkey="region">МО</th>
+                <th filterkey="lastName">Фамилия</th>
+                <th filterkey="name">Имя</th>
+                <th filterkey="patronymic">Отчество</th>
+                <th filterkey="position">Должность</th>
                 <th>Период</th>
                 <th>Справка</th>
                 <th />
-              </tr>
+              </TableFilter>
             </thead>
             <tbody>
               {visibleUsers.map(el => referenceTail({ el, references }))}

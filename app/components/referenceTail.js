@@ -4,7 +4,6 @@ import moize from 'moize';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import _ from 'lodash';
-import { tableDateFormat } from '../utils/dateFormat';
 import routes from '../constants/routes';
 
 const getLastPeriod = (userId, references) => {
@@ -21,10 +20,10 @@ const referenceTail = ({ el, references }: {el: object, references: array}) => {
   const [lastPeriod, hasPeriod] = getLastPeriod(el.id, references);
   return (
     <tr key={el.id}>
+      <td className="text-capitalize">{el.region}</td>
       <td className="text-capitalize">{el.lastName}</td>
       <td className="text-capitalize">{el.name}</td>
       <td className="text-capitalize">{el.patronymic}</td>
-      <td>{tableDateFormat(el.birthday)}</td>
       <td>{el.position}</td>
       <td>{lastPeriod}</td>
       <td>{hasPeriod ? 'Да' : 'Нет'}</td>
