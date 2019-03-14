@@ -8,9 +8,9 @@ export const createTable = (users, references) => {
   const worksheet = workbook.addWorksheet('My Sheet');
 
   worksheet.columns = [
-    { header: '№\nМО', key: 'regionId', width: 5 },
+    { header: '№ МО', key: 'regionId', width: 5 },
     {
-      header: 'Наименование\nмуниципального образования',
+      header: 'Наименование муниципального образования',
       key: 'region',
       width: 50
     },
