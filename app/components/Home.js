@@ -249,8 +249,6 @@ export default class Home extends Component<Props> {
                 <th filterkey="patronymic">Отчество</th>
                 <th filterkey="position">Должность</th>
                 <th>Период</th>
-                <th>Справка</th>
-                <th />
               </TableFilter>
             </thead>
             <tbody>

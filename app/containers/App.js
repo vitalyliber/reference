@@ -2,9 +2,9 @@
 import * as React from 'react';
 // https://fontawesome.com/how-to-use/on-the-web/using-with/react
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faEdit, faTrash, faFile } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faFile } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faEdit, faTrash, faFile);
+library.add(faTrash, faFile);
 
 type Props = {
   children: React.Node

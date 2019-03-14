@@ -3,7 +3,6 @@ import React from 'react';
 import moize from 'moize';
 import { Route } from 'react-router-dom';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import _ from 'lodash';
 import routes from '../constants/routes';
 
@@ -24,9 +23,9 @@ const referenceTail = ({
   el: object,
   references: array
 }) => {
-  const [lastPeriod, hasPeriod] = getLastPeriod(el.id, references);
+  const [lastPeriod] = getLastPeriod(el.id, references);
   const pathParams = { pathname: routes.EDIT, state: { ...el } };
-  console.log('ffff');
+  console.log('cached');
   return (
     <Route
       render={({ history }) => (
@@ -43,12 +42,6 @@ const referenceTail = ({
           <td className="text-capitalize">{el.patronymic}</td>
           <td>{el.position}</td>
           <td>{lastPeriod}</td>
-          <td>{hasPeriod ? 'Да' : 'Нет'}</td>
-          <td>
-            <a href="#">
-              <FontAwesomeIcon icon="edit" />
-            </a>
-          </td>
         </Tr>
       )}
     />
