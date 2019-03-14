@@ -1,7 +1,7 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
+import { Table, Breadcrumb, BreadcrumbItem, Input, Button } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
@@ -9,6 +9,7 @@ import TableFilter from 'react-table-filter';
 import '!style-loader!css-loader!react-table-filter/lib/styles.css';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
+import { createTable } from '../utils/table';
 
 type Props = {
   users: [],
@@ -211,13 +212,23 @@ export default class Home extends Component<Props> {
             Реестр
           </BreadcrumbItem>
         </Breadcrumb>
-        <ModalUploader
-          acceptedFiles={['xlsx']}
-          title="Выберите файл"
-          buttonLabel="Импорт списка"
-          action={this.parseData}
-          ref={this.modal}
-        />
+        <RowContainer>
+          <ModalUploader
+            acceptedFiles={['xlsx']}
+            title="Выберите файл"
+            buttonLabel="Импорт"
+            action={this.parseData}
+            ref={this.modal}
+          />
+          <Button
+            size="sm"
+            color="info"
+            onClick={() => createTable(users, references)}
+            className="mb-3 ml-2 text-uppercase"
+          >
+            ЭКСПОРТ
+          </Button>
+        </RowContainer>
         <WrappedInput
           type="search"
           name="search"
@@ -268,6 +279,11 @@ const Container = styled.div`
 const BorderContainer = styled.div`
   border: solid #f7f7f9;
   border-width: 0.2rem;
+`;
+
+const RowContainer = styled.div`
+  display: flex;
+  flex-direction: row;
 `;
 
 const WrappedInput = styled(Input)`

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import _ from 'lodash';
 import routes from '../constants/routes';
 
-const getLastPeriod = (userId, references) => {
+export const getLastPeriod = (userId, references) => {
   const userReferences = references.filter(el => el.userId === userId);
   const userReferencesLength = userReferences.length;
   if (userReferencesLength > 0) {
