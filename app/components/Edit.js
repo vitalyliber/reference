@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import fileExtension from 'file-extension';
+import { confirmAlert } from 'react-confirm-alert';
 import {
   Table,
   Breadcrumb,
@@ -23,6 +24,7 @@ import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
 import { toast } from 'react-toastify';
+import _ from "lodash";
 
 type Props = {};
 
@@ -108,12 +110,27 @@ export default class Edit extends Component<Props> {
   removeFile = el => {
     const { removeRef } = this.props;
     const userDataPath = this.userDataPath();
-    try {
-      fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
-    } catch (e) {
-      console.log(e);
-    }
-    removeRef(el);
+    confirmAlert({
+      title: 'Подтвердите удаление',
+      message: 'Вы уверены, что хотите удалить справку?',
+      buttons: [
+        {
+          label: 'Да',
+          onClick: () => {
+            try {
+              fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
+            } catch (e) {
+              console.log(e);
+            }
+            removeRef(el);
+          }
+        },
+        {
+          label: 'Нет',
+          onClick: () => {}
+        }
+      ]
+    })
   };
 
   downloadFile = el => {
@@ -146,6 +163,7 @@ export default class Edit extends Component<Props> {
     } = this.props;
 
     const filteredReferences = references.filter(el => el.userId === state.id);
+    const sortedReferences = _.orderBy(filteredReferences, ['year'], ['desc']);
 
     return (
       <Container data-tid="container">
@@ -200,7 +218,7 @@ export default class Edit extends Component<Props> {
               </tr>
             </thead>
             <tbody>
-              {filteredReferences.map((el, index) => (
+              {sortedReferences.map((el, index) => (
                 <tr key={el.id}>
                   <th scope="row">{index + 1}</th>
                   <td>{el.year}</td>

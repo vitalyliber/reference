@@ -10,8 +10,8 @@ export const getLastPeriod = (userId, references) => {
   const userReferences = references.filter(el => el.userId === userId);
   const userReferencesLength = userReferences.length;
   if (userReferencesLength > 0) {
-    const sortedReferences = _.sortBy(userReferences, ['year']);
-    return [sortedReferences[userReferencesLength - 1]['year'], true];
+    const sortedReferences = _.orderBy(userReferences, ['year'], ['desc']);
+    return [sortedReferences[0]['year'], true];
   }
   return ['-', false];
 };

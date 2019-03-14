@@ -5,7 +5,7 @@ import { getLastPeriod } from '../components/referenceTail';
 
 export const createTable = (users, references) => {
   const workbook = new Excel.Workbook();
-  const worksheet = workbook.addWorksheet('My Sheet');
+  const worksheet = workbook.addWorksheet('Лист_1');
 
   worksheet.columns = [
     { header: '№ МО', key: 'regionId', width: 5 },

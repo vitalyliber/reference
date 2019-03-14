@@ -11205,6 +11205,11 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.1, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
+react-confirm-alert@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/react-confirm-alert/-/react-confirm-alert-2.3.0.tgz#c8a7282f06855235315840b72ed13374448161eb"
+  integrity sha512-4TWTzI0lx94eCJAnvFMF0ZUgCj680rxkL/0elIyB9uWXrrlKeZ4+84TMePKYWK9WZJIBKx5r87xfCk9c4Bx9Rg==
+
 react-dom@^16.8.3:
   version "16.8.3"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.8.3.tgz#ae236029e66210783ac81999d3015dfc475b9c32"

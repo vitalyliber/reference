@@ -272,6 +272,7 @@
     "moize": "^5.4.2",
     "nanoid": "^2.0.1",
     "react": "^16.8.3",
+    "react-confirm-alert": "^2.3.0",
     "react-dom": "^16.8.3",
     "react-dropzone": "^10.0.0",
     "react-hot-loader": "^4.7.2",
