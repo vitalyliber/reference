@@ -209,7 +209,7 @@ export default class Home extends Component<Props> {
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
           <BreadcrumbItem tag="span" active>
-            Реестр
+            Реестр лиц, подающих справку БК
           </BreadcrumbItem>
         </Breadcrumb>
         <RowContainer>

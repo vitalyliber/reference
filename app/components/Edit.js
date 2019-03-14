@@ -85,7 +85,11 @@ export default class Edit extends Component<Props> {
       if (!fs.existsSync(`${userDataPath}/refs`)) {
         fs.mkdirSync(`${userDataPath}/refs`);
       }
-      fs.writeFileSync(`${userDataPath}/refs/${id}.${extension}`, data, 'binary');
+      fs.writeFileSync(
+        `${userDataPath}/refs/${id}.${extension}`,
+        data,
+        'binary'
+      );
       addRef({
         id,
         userId,
@@ -124,10 +128,14 @@ export default class Edit extends Component<Props> {
     });
     const userDataPath = this.userDataPath();
     if (userChosenPath) {
-      fs.copyFile(`${userDataPath}/refs/${el.id}.${el.extension}`, userChosenPath, err => {
-        if (err) throw err;
-        console.log('copied successfully');
-      });
+      fs.copyFile(
+        `${userDataPath}/refs/${el.id}.${el.extension}`,
+        userChosenPath,
+        err => {
+          if (err) throw err;
+          console.log('copied successfully');
+        }
+      );
     }
   };
 
@@ -143,7 +151,7 @@ export default class Edit extends Component<Props> {
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
           <BreadcrumbItem>
-            <Link to={routes.HOME}>Реестр</Link>
+            <Link to={routes.HOME}>Реестр лиц, подающих справку БК</Link>
           </BreadcrumbItem>
           <BreadcrumbItem tag="span" active>
             Редактирование
@@ -186,6 +194,7 @@ export default class Edit extends Component<Props> {
               <tr>
                 <th>#</th>
                 <th>Период отчетности</th>
+                <th>Формат</th>
                 <th />
                 <th />
               </tr>
@@ -195,6 +204,9 @@ export default class Edit extends Component<Props> {
                 <tr key={el.id}>
                   <th scope="row">{index + 1}</th>
                   <td>{el.year}</td>
+                  <td>
+                    <Badge color="dark">{el.extension}</Badge>
+                  </td>
                   <td>
                     <a
                       href="#"
