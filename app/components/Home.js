@@ -243,11 +243,11 @@ export default class Home extends Component<Props> {
                 rows={users}
                 onFilterUpdate={this.filterUpdated}
               >
-                <th filterkey="region">МО</th>
-                <th filterkey="lastName">Фамилия</th>
-                <th filterkey="name">Имя</th>
-                <th filterkey="patronymic">Отчество</th>
-                <th filterkey="position">Должность</th>
+                <th filterkey="region">ОМСУ</th>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Отчество</th>
+                <th alignleft filterkey="position">Должность</th>
                 <th>Период</th>
               </TableFilter>
             </thead>
