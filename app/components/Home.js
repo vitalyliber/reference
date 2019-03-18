@@ -49,7 +49,7 @@ export default class Home extends Component<Props> {
     this.setState({
       users: newUsers,
       filteredUsers: newUsers
-    })
+    });
   }
 
   generateTableId = ({ lastName, name, patronymic }) =>
@@ -217,10 +217,18 @@ export default class Home extends Component<Props> {
     this.setState({ selectedReferenceOption: event.target.checked });
   };
 
+  clearFilters = () => {
+    this.handleRegionChange(null);
+    this.handleYearChange(null);
+    this.handlePositionChange(null);
+    this.handleReferenceChange({ target: { checked: false } });
+    this.toggleSearchInput({ target: { value: '' } });
+  };
+
   render() {
     let visibleUsers;
     const { references } = this.props;
-    let {
+    const {
       searchInput,
       users,
       filteredUsers,
@@ -233,7 +241,6 @@ export default class Home extends Component<Props> {
     const filter = new DataFilter();
 
     visibleUsers = filteredUsers;
-
 
     if (!_.isEmpty(searchInput)) {
       filter.add('fullName', 'contains', searchInput.toLowerCase());
@@ -268,27 +275,46 @@ export default class Home extends Component<Props> {
             Реестр лиц, подающих справку БК
           </BreadcrumbItem>
         </Breadcrumb>
-        <RowContainer>
-          <ModalUploader
-            acceptedFiles={['xlsx']}
-            title="Выберите файл"
-            buttonLabel="Импорт"
-            action={this.parseData}
-            ref={this.modal}
-          />
+        <RowContainerSpaceBetween>
+          <RowContainer>
+            <ModalUploader
+              acceptedFiles={['xlsx']}
+              title="Выберите файл"
+              buttonLabel="Импорт"
+              action={this.parseData}
+              ref={this.modal}
+            />
+            <Button
+              size="sm"
+              color="info"
+              onClick={() => createTable(users, references)}
+              className="mb-3 ml-2 text-uppercase"
+            >
+              ЭКСПОРТ
+            </Button>
+          </RowContainer>
           <Button
             size="sm"
-            color="info"
-            onClick={() => createTable(users, references)}
+            disabled={
+              _.isEmpty(selectedRegionOption) &&
+              _.isEmpty(selectedPositionOption) &&
+              _.isEmpty(selectedYearOption) &&
+              _.isEmpty(searchInput) &&
+              !selectedReferenceOption
+            }
+            color="link"
+            onClick={this.clearFilters}
             className="mb-3 ml-2 text-uppercase"
           >
-            ЭКСПОРТ
+            СБРОСИТЬ ФИЛЬТРЫ
           </Button>
-        </RowContainer>
+        </RowContainerSpaceBetween>
+
         <WrappedInput
           type="search"
           name="search"
           placeholder="Поиск по ФИО"
+          value={searchInput}
           onChange={this.toggleSearchInput}
         />
 
@@ -319,7 +345,7 @@ export default class Home extends Component<Props> {
         <WrappedFormGroup check>
           <Label check>
             <Input
-              value={selectedReferenceOption}
+              checked={selectedReferenceOption}
               onChange={this.handleReferenceChange}
               type="checkbox"
             />{' '}
@@ -367,6 +393,12 @@ const BorderContainer = styled.div`
 const RowContainer = styled.div`
   display: flex;
   flex-direction: row;
+`;
+
+const RowContainerSpaceBetween = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
 const WrappedInput = styled(Input)`
