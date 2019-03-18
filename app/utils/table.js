@@ -1,7 +1,7 @@
 import Excel from 'exceljs';
 import electron from 'electron';
 import _ from 'lodash';
-import { getLastPeriod } from '../components/referenceTail';
+import cachedLastPeriod from './cachedLastPeriod';
 
 export const createTable = (users, references) => {
   const workbook = new Excel.Workbook();
@@ -21,7 +21,7 @@ export const createTable = (users, references) => {
     { header: 'Год предоставления', key: 'year', width: 25 }
   ];
   users.forEach(el => {
-    const [lastPeriod, hasPeriod] = getLastPeriod(el.id, references);
+    const [lastPeriod, hasPeriod] = cachedLastPeriod(el.id, references);
     worksheet.addRow({
       ...el,
       name: _.startCase(el.name),

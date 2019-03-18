@@ -14,7 +14,6 @@ import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
-import '!style-loader!css-loader!react-table-filter/lib/styles.css';
 import DataFilter from 'datafilter';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
@@ -34,16 +33,23 @@ export default class Home extends Component<Props> {
   constructor(props) {
     super(props);
     this.modal = React.createRef();
-    const { users, references } = props;
-    const newUsers = cachedUsers(users, references);
     this.state = {
       searchInput: '',
-      users: newUsers,
-      filteredUsers: newUsers,
+      users: [],
+      filteredUsers: [],
       selectedRegionOption: null,
       selectedReferenceOption: false
     };
     this.tableFilter = React.createRef();
+  }
+
+  componentDidMount() {
+    const { users, references } = this.props;
+    const newUsers = cachedUsers(users, references);
+    this.setState({
+      users: newUsers,
+      filteredUsers: newUsers
+    })
   }
 
   generateTableId = ({ lastName, name, patronymic }) =>
@@ -226,16 +232,11 @@ export default class Home extends Component<Props> {
 
     const filter = new DataFilter();
 
+    visibleUsers = filteredUsers;
+
+
     if (!_.isEmpty(searchInput)) {
-      const loverCaseSearchInput = searchInput.toLowerCase();
-      visibleUsers = filteredUsers.filter(
-        ({ name, lastName, patronymic }) =>
-          `${lastName} ${name} ${patronymic}`
-            .toLowerCase()
-            .search(loverCaseSearchInput) !== -1
-      );
-    } else {
-      visibleUsers = filteredUsers;
+      filter.add('fullName', 'contains', searchInput.toLowerCase());
     }
 
     if (!_.isEmpty(selectedRegionOption)) {

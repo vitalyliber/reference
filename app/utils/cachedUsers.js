@@ -5,7 +5,11 @@ const usersList = (users, references) => {
   console.log('cachedUsers');
   return users.map(el => {
     const [lastPeriod, isEmpty] = cachedLastPeriod(el.id, references);
-    return { ...el, year: isEmpty ? lastPeriod : '' };
+    return {
+      ...el,
+      fullName: `${el.lastName} ${el.name} ${el.patronymic}`,
+      year: isEmpty ? lastPeriod : ''
+    };
   });
 };
 
