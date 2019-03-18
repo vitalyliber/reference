@@ -4477,6 +4477,11 @@ data-urls@^1.0.0:
     whatwg-mimetype "^2.2.0"
     whatwg-url "^7.0.0"
 
+datafilter@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/datafilter/-/datafilter-1.0.3.tgz#5e97e3cf3c1e1f0c62fbd5f0a20b9704bdc117e9"
+  integrity sha1-XpfjzzweHwxi+9XwoguXBL3BF+k=
+
 date-extended@~0.0.3:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/date-extended/-/date-extended-0.0.6.tgz#23802d57dd1bf7818813fe0c32e851a86da267c9"
@@ -11329,12 +11334,6 @@ react-select@^2.4.2:
     raf "^3.4.0"
     react-input-autosize "^2.2.1"
     react-transition-group "^2.2.1"
-
-react-table-filter@vitalyliber/react-table-filter#38717a037c1427fc841adbcc300597ced28aac67:
-  version "1.1.5"
-  resolved "https://codeload.github.com/vitalyliber/react-table-filter/tar.gz/38717a037c1427fc841adbcc300597ced28aac67"
-  dependencies:
-    prop-types "^15.6.0"
 
 react-test-renderer@^16.0.0-0:
   version "16.6.0"
