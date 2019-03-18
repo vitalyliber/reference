@@ -356,14 +356,12 @@ export default class Home extends Component<Props> {
           <Table hover striped size="sm">
             <thead>
               <th>ОМСУ</th>
-              <th>Фамилия</th>
-              <th>Имя</th>
-              <th>Отчество</th>
+              <th>ФИО</th>
               <th>Должность</th>
               <th>Период</th>
             </thead>
             <tbody>
-              {visibleUsers.map(el => referenceTail({ el, references }))}
+              {visibleUsers.map(el => referenceTail({ el, searchInput }))}
               {visibleUsers.length === 0 && (
                 <tr className="table-light">
                   <td colSpan="9" className="text-center mt-4">
