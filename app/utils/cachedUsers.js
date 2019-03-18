@@ -1,9 +1,10 @@
 import moize from 'moize';
+import _ from "lodash";
 import cachedLastPeriod from './cachedLastPeriod';
 
 const usersList = (users, references) => {
   console.log('cachedUsers');
-  return users.map(el => {
+  const newUsers = users.map(el => {
     const [lastPeriod, isEmpty] = cachedLastPeriod(el.id, references);
     return {
       ...el,
@@ -11,6 +12,7 @@ const usersList = (users, references) => {
       year: isEmpty ? lastPeriod : ''
     };
   });
+  return _.orderBy(newUsers, ['region'], ['asc']);
 };
 
 export default moize.react(usersList);

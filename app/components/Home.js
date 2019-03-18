@@ -298,7 +298,7 @@ export default class Home extends Component<Props> {
           options={cachedOptions(users, 'region')}
           isMulti
           isSearchable
-          placeholder="Сортировка по региону"
+          placeholder="Фильтр по ОМСУ"
         />
         <WrappedSelect
           value={selectedPositionOption}
@@ -306,7 +306,7 @@ export default class Home extends Component<Props> {
           options={cachedOptions(users, 'position')}
           isMulti
           isSearchable
-          placeholder="Сортировка по должности"
+          placeholder="Фильтр по должности"
         />
         <WrappedSelect
           value={selectedYearOption}
@@ -314,7 +314,7 @@ export default class Home extends Component<Props> {
           options={cachedOptions(users, 'year')}
           isMulti
           isSearchable
-          placeholder="Сортировка по году справки"
+          placeholder="Фильтр по году справки"
         />
         <WrappedFormGroup check>
           <Label check>
@@ -323,7 +323,7 @@ export default class Home extends Component<Props> {
               onChange={this.handleReferenceChange}
               type="checkbox"
             />{' '}
-            Сортировка по наличию справки
+            Фильтр по наличию справки
           </Label>
         </WrappedFormGroup>
         <BorderContainer>
