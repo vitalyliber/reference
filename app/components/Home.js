@@ -6,9 +6,7 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Input,
-  Button,
-  FormGroup,
-  Label
+  Button
 } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
@@ -343,14 +341,12 @@ export default class Home extends Component<Props> {
           placeholder="Фильтр по году справки"
         />
         <WrappedFormGroup check>
-          <Label check>
-            <Input
+            <CheckBox
               checked={selectedReferenceOption}
               onChange={this.handleReferenceChange}
               type="checkbox"
             />{' '}
             Фильтр по наличию справки
-          </Label>
         </WrappedFormGroup>
         <BorderContainer>
           <Table hover striped size="sm">
@@ -407,6 +403,13 @@ const WrappedSelect = styled(Select)`
   margin-bottom: 15px;
 `;
 
-const WrappedFormGroup = styled(FormGroup)`
+const WrappedFormGroup = styled.div`
+  display: flex;
+  flex-direction: row;
   margin-bottom: 15px;
+  align-items: center;
+`;
+
+const CheckBox = styled.input`
+  margin-right: 10px;
 `;
