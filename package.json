@@ -1,7 +1,7 @@
 {
   "name": "electron-react-boilerplate",
-  "productName": "ElectronReact",
-  "version": "0.17.1",
+  "productName": "Справка БК",
+  "version": "0.0.1",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
@@ -56,8 +56,8 @@
   },
   "main": "./app/main.prod.js",
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.develar.ElectronReact",
+    "productName": "Справка БК",
+    "appId": "com.ReferenceBK",
     "files": [
       "app/dist/",
       "app/app.html",
@@ -100,19 +100,17 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate",
+      "owner": "govsolutions",
+      "repo": "reference",
       "private": false
     }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "git+https://github.com/govsolutions/reference.git"
   },
   "author": {
-    "name": "Electron React Boilerplte Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "GovSolutions"
   },
   "contributors": [
     {
@@ -259,11 +257,13 @@
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
     "@fortawesome/react-fontawesome": "^0.1.4",
     "bootstrap": "^4.3.1",
+    "datafilter": "^1.0.3",
     "devtron": "^1.4.0",
     "electron-debug": "^2.0.0",
     "electron-log": "^2.2.17",
     "electron-store": "^2.0.0",
     "electron-updater": "^3.2.3",
+    "exceljs": "^1.7.0",
     "file-extension": "^4.0.5",
     "history": "^4.7.2",
     "jquery": "^3.3.1",
@@ -271,14 +271,15 @@
     "moize": "^5.4.2",
     "nanoid": "^2.0.1",
     "react": "^16.8.3",
+    "react-confirm-alert": "^2.3.0",
     "react-dom": "^16.8.3",
     "react-dropzone": "^10.0.0",
     "react-hot-loader": "^4.7.2",
     "react-redux": "^5.1.1",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
-    "react-select": "^2.4.1",
-    "react-table-filter": "vitalyliber/react-table-filter#0480790ebbf49f7d966c80a13f50b849e68218ee",
+    "react-select": "^2.4.2",
+    "react-string-replace": "^0.4.1",
     "react-toastify": "^4.5.2",
     "reactstrap": "^7.1.0",
     "redux": "^4.0.1",

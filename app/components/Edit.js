@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import fileExtension from 'file-extension';
+import { confirmAlert } from 'react-confirm-alert';
 import {
   Table,
   Breadcrumb,
@@ -23,6 +24,7 @@ import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
 import { toast } from 'react-toastify';
+import _ from 'lodash';
 
 type Props = {};
 
@@ -85,7 +87,11 @@ export default class Edit extends Component<Props> {
       if (!fs.existsSync(`${userDataPath}/refs`)) {
         fs.mkdirSync(`${userDataPath}/refs`);
       }
-      fs.writeFileSync(`${userDataPath}/refs/${id}.${extension}`, data, 'binary');
+      fs.writeFileSync(
+        `${userDataPath}/refs/${id}.${extension}`,
+        data,
+        'binary'
+      );
       addRef({
         id,
         userId,
@@ -104,12 +110,27 @@ export default class Edit extends Component<Props> {
   removeFile = el => {
     const { removeRef } = this.props;
     const userDataPath = this.userDataPath();
-    try {
-      fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
-    } catch (e) {
-      console.log(e);
-    }
-    removeRef(el);
+    confirmAlert({
+      title: 'Подтвердите удаление',
+      message: 'Вы уверены, что хотите удалить справку?',
+      buttons: [
+        {
+          label: 'Да',
+          onClick: () => {
+            try {
+              fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
+            } catch (e) {
+              console.log(e);
+            }
+            removeRef(el);
+          }
+        },
+        {
+          label: 'Нет',
+          onClick: () => {}
+        }
+      ]
+    });
   };
 
   downloadFile = el => {
@@ -124,10 +145,14 @@ export default class Edit extends Component<Props> {
     });
     const userDataPath = this.userDataPath();
     if (userChosenPath) {
-      fs.copyFile(`${userDataPath}/refs/${el.id}.${el.extension}`, userChosenPath, err => {
-        if (err) throw err;
-        console.log('copied successfully');
-      });
+      fs.copyFile(
+        `${userDataPath}/refs/${el.id}.${el.extension}`,
+        userChosenPath,
+        err => {
+          if (err) throw err;
+          console.log('copied successfully');
+        }
+      );
     }
   };
 
@@ -138,12 +163,13 @@ export default class Edit extends Component<Props> {
     } = this.props;
 
     const filteredReferences = references.filter(el => el.userId === state.id);
+    const sortedReferences = _.orderBy(filteredReferences, ['year'], ['desc']);
 
     return (
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
           <BreadcrumbItem>
-            <Link to={routes.HOME}>Реестр</Link>
+            <Link to={routes.HOME}>Реестр лиц, подающих справку БК</Link>
           </BreadcrumbItem>
           <BreadcrumbItem tag="span" active>
             Редактирование
@@ -186,37 +212,31 @@ export default class Edit extends Component<Props> {
               <tr>
                 <th>#</th>
                 <th>Период отчетности</th>
-                <th />
-                <th />
+                <th>Формат</th>
               </tr>
             </thead>
             <tbody>
-              {filteredReferences.map((el, index) => (
+              {sortedReferences.map((el, index) => (
                 <tr key={el.id}>
                   <th scope="row">{index + 1}</th>
                   <td>{el.year}</td>
-                  <td>
-                    <a
-                      href="#"
-                      onClick={e => {
-                        e.preventDefault();
+                  <ActionsTd>
+                    <BadgeExtension
+                      color="dark"
+                      onClick={() => {
                         this.downloadFile(el);
                       }}
                     >
+                      {el.extension}
                       <FontAwesomeIcon icon="file" />
-                    </a>
-                  </td>
-                  <td>
-                    <a
-                      href="#"
-                      onClick={e => {
-                        e.preventDefault();
+                    </BadgeExtension>
+                    <IconDelete
+                      icon="trash"
+                      onClick={() => {
                         this.removeFile(el);
                       }}
-                    >
-                      <FontAwesomeIcon icon="trash" />
-                    </a>
-                  </td>
+                    />
+                  </ActionsTd>
                 </tr>
               ))}
               {filteredReferences.length === 0 && (
@@ -245,4 +265,24 @@ const BorderContainer = styled.div`
 
 const WrappedSelect = styled(Select)`
   margin-bottom: 15px;
+`;
+
+const IconDelete = styled(FontAwesomeIcon)`
+  cursor: pointer;
+  color: red;
+`;
+
+const BadgeExtension = styled(Badge)`
+    cursor: pointer;
+    width: 50px;
+    display: flex !important;
+    flex-direction: row;
+    justify-content: space-between;
+`;
+
+const ActionsTd = styled.td`
+  width: 100px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 `;

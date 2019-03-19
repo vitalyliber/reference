@@ -22,7 +22,8 @@ export default class MenuBuilder {
         : this.buildDefaultTemplate();
 
     const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
+    // turn on it for visible menu on a Win OS
+    // Menu.setApplicationMenu(menu);
 
     return menu;
   }

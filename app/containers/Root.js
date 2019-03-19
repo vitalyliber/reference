@@ -8,6 +8,7 @@ import type { Store } from '../reducers/types';
 import Routes from '../Routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import '!style-loader!css-loader!react-toastify/dist/ReactToastify.css';
+import '!style-loader!css-loader!react-confirm-alert/src/react-confirm-alert.css';
 
 type Props = {
   store: Store,

@@ -1,14 +1,25 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Table, Breadcrumb, BreadcrumbItem, Input } from 'reactstrap';
+import {
+  Table,
+  Breadcrumb,
+  BreadcrumbItem,
+  Input,
+  Button,
+  FormGroup,
+  Label
+} from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
-import TableFilter from 'react-table-filter';
-import '!style-loader!css-loader!react-table-filter/lib/styles.css';
+import Select from 'react-select';
+import DataFilter from 'datafilter';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
+import { createTable } from '../utils/table';
+import cachedOptions from '../utils/cachedOptions';
+import cachedUsers from '../utils/cachedUsers';
 
 type Props = {
   users: [],
@@ -22,13 +33,23 @@ export default class Home extends Component<Props> {
   constructor(props) {
     super(props);
     this.modal = React.createRef();
-    const { users } = props;
     this.state = {
       searchInput: '',
-      users,
-      filteredUsers: users
+      users: [],
+      filteredUsers: [],
+      selectedRegionOption: null,
+      selectedReferenceOption: false
     };
     this.tableFilter = React.createRef();
+  }
+
+  componentDidMount() {
+    const { users, references } = this.props;
+    const newUsers = cachedUsers(users, references);
+    this.setState({
+      users: newUsers,
+      filteredUsers: newUsers
+    });
   }
 
   generateTableId = ({ lastName, name, patronymic }) =>
@@ -145,7 +166,7 @@ export default class Home extends Component<Props> {
         console.log('USERS', users);
         mergeUsers(users);
         this.setState({ users, filteredUsers: users });
-        this.tableFilter.current.reset(users)
+        this.tableFilter.current.reset(users);
       } catch (e) {
         console.log(e);
         toast.error(errorMsg, {
@@ -180,70 +201,167 @@ export default class Home extends Component<Props> {
     this.setState({ searchInput: event.target.value });
   };
 
-  filterUpdated = (filteredUsers, filterConfiguration) => {
-    console.log(filteredUsers);
-    this.setState({
-      filteredUsers
-    });
+  handleRegionChange = selectedRegionOption => {
+    this.setState({ selectedRegionOption });
+  };
+
+  handleYearChange = selectedYearOption => {
+    this.setState({ selectedYearOption });
+  };
+
+  handlePositionChange = selectedPositionOption => {
+    this.setState({ selectedPositionOption });
+  };
+
+  handleReferenceChange = event => {
+    this.setState({ selectedReferenceOption: event.target.checked });
+  };
+
+  clearFilters = () => {
+    this.handleRegionChange(null);
+    this.handleYearChange(null);
+    this.handlePositionChange(null);
+    this.handleReferenceChange({ target: { checked: false } });
+    this.toggleSearchInput({ target: { value: '' } });
   };
 
   render() {
     let visibleUsers;
     const { references } = this.props;
-    let { searchInput, users, filteredUsers } = this.state;
+    const {
+      searchInput,
+      users,
+      filteredUsers,
+      selectedRegionOption,
+      selectedPositionOption,
+      selectedYearOption,
+      selectedReferenceOption
+    } = this.state;
+
+    const filter = new DataFilter();
+
+    visibleUsers = filteredUsers;
 
     if (!_.isEmpty(searchInput)) {
-      const loverCaseSearchInput = searchInput.toLowerCase();
-      visibleUsers = filteredUsers.filter(
-        ({ name, lastName, patronymic, taxpayerNumber }) =>
-          `${lastName} ${name} ${patronymic} ${taxpayerNumber}`
-            .toLowerCase()
-            .search(loverCaseSearchInput) !== -1
-      );
-    } else {
-      visibleUsers = filteredUsers;
+      filter.add('fullName', 'contains', searchInput.toLowerCase());
     }
+
+    if (!_.isEmpty(selectedRegionOption)) {
+      const values = selectedRegionOption.map(({ value }) => value);
+      filter.add('region', 'equal', values);
+    }
+
+    if (!_.isEmpty(selectedPositionOption)) {
+      const values = selectedPositionOption.map(({ value }) => value);
+      filter.add('position', 'equal', values);
+    }
+
+    if (!_.isEmpty(selectedYearOption)) {
+      const values = selectedYearOption.map(({ value }) => value);
+      filter.add('year', 'equal', values);
+    }
+
+    if (selectedReferenceOption) {
+      const values = cachedOptions(users, 'year').map(({ value }) => value);
+      filter.add('year', 'equal', values);
+    }
+
+    visibleUsers = filter.match(visibleUsers);
 
     return (
       <Container data-tid="container">
         <Breadcrumb tag="nav" listTag="div">
           <BreadcrumbItem tag="span" active>
-            Реестр
+            Реестр лиц, подающих справку БК
           </BreadcrumbItem>
         </Breadcrumb>
-        <ModalUploader
-          acceptedFiles={['xlsx']}
-          title="Выберите файл"
-          buttonLabel="Импорт списка"
-          action={this.parseData}
-          ref={this.modal}
-        />
+        <RowContainerSpaceBetween>
+          <RowContainer>
+            <ModalUploader
+              acceptedFiles={['xlsx']}
+              title="Выберите файл"
+              buttonLabel="Импорт"
+              action={this.parseData}
+              ref={this.modal}
+            />
+            <Button
+              size="sm"
+              color="info"
+              onClick={() => createTable(users, references)}
+              className="mb-3 ml-2 text-uppercase"
+            >
+              ЭКСПОРТ
+            </Button>
+          </RowContainer>
+          <Button
+            size="sm"
+            disabled={
+              _.isEmpty(selectedRegionOption) &&
+              _.isEmpty(selectedPositionOption) &&
+              _.isEmpty(selectedYearOption) &&
+              _.isEmpty(searchInput) &&
+              !selectedReferenceOption
+            }
+            color="link"
+            onClick={this.clearFilters}
+            className="mb-3 ml-2 text-uppercase"
+          >
+            СБРОСИТЬ ФИЛЬТРЫ
+          </Button>
+        </RowContainerSpaceBetween>
+
         <WrappedInput
           type="search"
           name="search"
           placeholder="Поиск по ФИО"
+          value={searchInput}
           onChange={this.toggleSearchInput}
         />
+
+        <WrappedSelect
+          value={selectedRegionOption}
+          onChange={this.handleRegionChange}
+          options={cachedOptions(users, 'region')}
+          isMulti
+          isSearchable
+          placeholder="Фильтр по ОМСУ"
+        />
+        <WrappedSelect
+          value={selectedPositionOption}
+          onChange={this.handlePositionChange}
+          options={cachedOptions(users, 'position')}
+          isMulti
+          isSearchable
+          placeholder="Фильтр по должности"
+        />
+        <WrappedSelect
+          value={selectedYearOption}
+          onChange={this.handleYearChange}
+          options={cachedOptions(users, 'year')}
+          isMulti
+          isSearchable
+          placeholder="Фильтр по году справки"
+        />
+        <WrappedFormGroup check>
+          <Label check>
+            <Input
+              checked={selectedReferenceOption}
+              onChange={this.handleReferenceChange}
+              type="checkbox"
+            />{' '}
+            Фильтр по наличию справки
+          </Label>
+        </WrappedFormGroup>
         <BorderContainer>
           <Table hover striped size="sm">
             <thead>
-              <TableFilter
-                ref={this.tableFilter}
-                rows={users}
-                onFilterUpdate={this.filterUpdated}
-              >
-                <th filterkey="region">МО</th>
-                <th filterkey="lastName">Фамилия</th>
-                <th filterkey="name">Имя</th>
-                <th filterkey="patronymic">Отчество</th>
-                <th filterkey="position">Должность</th>
-                <th>Период</th>
-                <th>Справка</th>
-                <th />
-              </TableFilter>
+              <th>ОМСУ</th>
+              <th>ФИО</th>
+              <th>Должность</th>
+              <th>Период</th>
             </thead>
             <tbody>
-              {visibleUsers.map(el => referenceTail({ el, references }))}
+              {visibleUsers.map(el => referenceTail({ el, searchInput }))}
               {visibleUsers.length === 0 && (
                 <tr className="table-light">
                   <td colSpan="9" className="text-center mt-4">
@@ -270,6 +388,25 @@ const BorderContainer = styled.div`
   border-width: 0.2rem;
 `;
 
+const RowContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const RowContainerSpaceBetween = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
 const WrappedInput = styled(Input)`
+  margin-bottom: 15px;
+`;
+
+const WrappedSelect = styled(Select)`
+  margin-bottom: 15px;
+`;
+
+const WrappedFormGroup = styled(FormGroup)`
   margin-bottom: 15px;
 `;
