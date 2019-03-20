@@ -22,13 +22,13 @@ const referenceTail = ({
   const pathParams = { pathname: routes.EDIT, state: { ...el } };
   return (
     <Route
+      key={el.id}
       render={({ history }) => (
         <Tr
           onClick={e => {
             e.preventDefault();
             history.push(pathParams);
           }}
-          key={el.id}
         >
           <td className="text-capitalize">{el.region}</td>
           <td>
