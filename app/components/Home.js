@@ -1,28 +1,27 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import {
-  Table,
-  Breadcrumb,
-  BreadcrumbItem,
-  Input,
-  Button
-} from 'reactstrap';
+import { Table, Breadcrumb, BreadcrumbItem, Input, Button } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 import DataFilter from 'datafilter';
+import fsExtra from 'fs-extra';
+import { confirmAlert } from 'react-confirm-alert';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
 import { createTable } from '../utils/table';
 import cachedOptions from '../utils/cachedOptions';
 import cachedUsers from '../utils/cachedUsers';
+import getUserDataPath from '../utils/userDataPath';
 
 type Props = {
   users: [],
   references: [],
-  mergeUsers: void
+  mergeUsers: void,
+  clearRefs: void,
+  clearUsers: void
 };
 
 export default class Home extends Component<Props> {
@@ -38,7 +37,6 @@ export default class Home extends Component<Props> {
       selectedRegionOption: null,
       selectedReferenceOption: false
     };
-    this.tableFilter = React.createRef();
   }
 
   componentDidMount() {
@@ -140,7 +138,7 @@ export default class Home extends Component<Props> {
   parseData = file => {
     const errorMsg = 'Попробуйте другой файл';
     const rABS = true;
-    const { mergeUsers } = this.props;
+    const { mergeUsers, references } = this.props;
     const reader = new FileReader();
     reader.onload = f => {
       try {
@@ -148,11 +146,8 @@ export default class Home extends Component<Props> {
         if (!rABS) data = new Uint8Array(data);
         const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
         const ws = workbook.Sheets['Лист1'];
-        console.log('WorkSheet', ws);
         const json = XLSX.utils.sheet_to_json(ws);
-        console.log('JSON', json);
         const jsonWithoutHeaders = json.slice(2);
-        console.log('jsonWithoutHeaders', jsonWithoutHeaders);
         if (typeof jsonWithoutHeaders[0]['__EMPTY'] !== 'number') {
           toast.error(errorMsg, {
             position: toast.POSITION.TOP_CENTER
@@ -161,10 +156,9 @@ export default class Home extends Component<Props> {
           return;
         }
         const users = this.processTable(jsonWithoutHeaders);
-        console.log('USERS', users);
         mergeUsers(users);
-        this.setState({ users, filteredUsers: users });
-        this.tableFilter.current.reset(users);
+        const newUsers = cachedUsers(users, references);
+        this.setState({ users: newUsers, filteredUsers: newUsers });
       } catch (e) {
         console.log(e);
         toast.error(errorMsg, {
@@ -179,7 +173,7 @@ export default class Home extends Component<Props> {
       this.modal.current.decline();
     };
     if (rABS) {
-      reader.readAsBinaryString(file);
+      return reader.readAsBinaryString(file);
     }
     reader.readAsArrayBuffer(file);
   };
@@ -221,6 +215,38 @@ export default class Home extends Component<Props> {
     this.handlePositionChange(null);
     this.handleReferenceChange({ target: { checked: false } });
     this.toggleSearchInput({ target: { value: '' } });
+  };
+
+  purgeDatabase = () => {
+    confirmAlert({
+      title: 'Подтвердите удаление',
+      message:
+        'Вы уверены, что хотите удалить данные реестра и все файлы справок?',
+      buttons: [
+        {
+          label: 'Да',
+          onClick: () => {
+            try {
+              const { clearRefs, clearUsers } = this.props;
+              const userDataPath = getUserDataPath();
+              fsExtra.emptyDirSync(`${userDataPath}/refs`);
+              clearRefs();
+              clearUsers();
+              this.setState({
+                users: [],
+                filteredUsers: []
+              });
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        },
+        {
+          label: 'Нет',
+          onClick: () => {}
+        }
+      ]
+    });
   };
 
   render() {
@@ -290,6 +316,14 @@ export default class Home extends Component<Props> {
             >
               ЭКСПОРТ
             </Button>
+            <Button
+              size="sm"
+              color="danger"
+              onClick={this.purgeDatabase}
+              className="mb-3 ml-2 text-uppercase"
+            >
+              УДАЛИТЬ
+            </Button>
           </RowContainer>
           <Button
             size="sm"
@@ -341,20 +375,22 @@ export default class Home extends Component<Props> {
           placeholder="Фильтр по году справки"
         />
         <WrappedFormGroup check>
-            <CheckBox
-              checked={selectedReferenceOption}
-              onChange={this.handleReferenceChange}
-              type="checkbox"
-            />{' '}
-            Фильтр по наличию справки
+          <CheckBox
+            checked={selectedReferenceOption}
+            onChange={this.handleReferenceChange}
+            type="checkbox"
+          />{' '}
+          Фильтр по наличию справки
         </WrappedFormGroup>
         <BorderContainer>
           <Table hover striped size="sm">
             <thead>
-              <th>ОМСУ</th>
-              <th>ФИО</th>
-              <th>Должность</th>
-              <th>Период</th>
+              <tr>
+                <th>ОМСУ</th>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th>Период</th>
+              </tr>
             </thead>
             <tbody>
               {visibleUsers.map(el => referenceTail({ el, searchInput }))}

@@ -8,9 +8,7 @@ const optionsList = (list, key) => {
     const element = typeof el[key] === 'number' ? el[key].toString() : el[key];
     return !_.isEmpty(element);
   });
-  console.log('filteredList', filteredList);
   const uniqList = _.uniqBy(filteredList, key);
-  console.log('uniqList', uniqList);
   return uniqList.map(el => ({
     value: el[key],
     label: el[key]
