@@ -17,3 +17,13 @@ export const mergeUsers = users => (dispatch: Dispatch, getState: GetState) => {
 
   dispatch(mergeUsersAction(newUsers));
 };
+
+export const CLEAR_USERS = 'CLEAR_USERS';
+
+const clearUsersAction = () => ({
+  type: CLEAR_USERS
+});
+
+export const clearUsers = () => (dispatch: Dispatch, getState: GetState) => {
+  dispatch(clearUsersAction());
+};

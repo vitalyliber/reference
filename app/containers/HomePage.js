@@ -1,15 +1,15 @@
 // @flow
-import React from 'react';
 import { connect } from 'react-redux';
 import Home from '../components/Home';
 import * as userActions from '../actions/users';
+import * as refActions from '../actions/references';
 
 const mapStateToProps = state => ({
   users: state.users.list,
-  references: state.references.list,
+  references: state.references.list
 });
 
 export default connect(
   mapStateToProps,
-  userActions
+  { ...userActions, ...refActions }
 )(Home);

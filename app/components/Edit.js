@@ -20,6 +20,7 @@ import electron from 'electron';
 import fs from 'fs';
 import nanoid from 'nanoid';
 import routes from '../constants/routes';
+import getUserDataPath from '../utils/userDataPath';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
@@ -42,7 +43,6 @@ export default class Edit extends Component<Props> {
 
   handleChange = selectedOption => {
     this.setState({ selectedOption });
-    console.log(`Option selected:`, selectedOption);
   };
 
   yearInput = () => {
@@ -60,9 +60,6 @@ export default class Edit extends Component<Props> {
     );
   };
 
-  userDataPath = () =>
-    (electron.app || electron.remote.app).getPath('userData');
-
   saveFile = file => {
     const { addRef } = this.props;
     const extension = fileExtension(file.name);
@@ -73,8 +70,7 @@ export default class Edit extends Component<Props> {
       });
       return;
     }
-    const userDataPath = this.userDataPath();
-    console.log(userDataPath);
+    const userDataPath = getUserDataPath();
     const reader = new FileReader();
     reader.onload = f => {
       const data = f.target.result;
@@ -109,7 +105,7 @@ export default class Edit extends Component<Props> {
 
   removeFile = el => {
     const { removeRef } = this.props;
-    const userDataPath = this.userDataPath();
+    const userDataPath = getUserDataPath();
     confirmAlert({
       title: 'Подтвердите удаление',
       message: 'Вы уверены, что хотите удалить справку?',
@@ -143,7 +139,7 @@ export default class Edit extends Component<Props> {
         state.patronymic
       }_${el.year}.${el.extension}`
     });
-    const userDataPath = this.userDataPath();
+    const userDataPath = getUserDataPath();
     if (userChosenPath) {
       fs.copyFile(
         `${userDataPath}/refs/${el.id}.${el.extension}`,

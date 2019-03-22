@@ -32,3 +32,13 @@ export const removeRef = ref => (dispatch: Dispatch, getState: GetState) => {
 
   dispatch(removeRefAction(newList));
 };
+
+export const CLEAR_REFS = 'CLEAR_REFS';
+
+const clearRefsAction = () => ({
+  type: CLEAR_REFS
+});
+
+export const clearRefs = () => (dispatch: Dispatch, getState: GetState) => {
+  dispatch(clearRefsAction());
+};

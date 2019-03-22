@@ -97,20 +97,14 @@
     "directories": {
       "buildResources": "resources",
       "output": "release"
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "vitalyliber",
-      "repo": "reference",
-      "private": false
     }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vitalyliber/reference.git"
+    "url": "git+https://mosreg.ru/react_native_projects/reference.git"
   },
   "author": {
-    "name": "VitalyLiber"
+    "name": "DigitalMoscow"
   },
   "contributors": [
     {
@@ -265,6 +259,7 @@
     "electron-updater": "^3.2.3",
     "exceljs": "^1.7.0",
     "file-extension": "^4.0.5",
+    "fs-extra": "^7.0.1",
     "history": "^4.7.2",
     "jquery": "^3.3.1",
     "lodash": "^4.17.11",
