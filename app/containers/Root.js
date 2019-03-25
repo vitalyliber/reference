@@ -3,7 +3,9 @@ import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import { PersistGate } from 'redux-persist/integration/react';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import sequelize from '../sequelize/sequelize';
+import SequelizeContext from '../sequelize/sequelizeContext';
 import type { Store } from '../reducers/types';
 import Routes from '../Routes';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
@@ -21,14 +23,16 @@ export default class Root extends Component<Props> {
     const { store, history, persistor } = this.props;
 
     return (
-      <Provider store={store}>
-        <PersistGate persistor={persistor}>
-          <ConnectedRouter history={history}>
-            <Routes />
-          </ConnectedRouter>
-          <ToastContainer />
-        </PersistGate>
-      </Provider>
+      <SequelizeContext.Provider value={sequelize}>
+        <Provider store={store}>
+          <PersistGate persistor={persistor}>
+            <ConnectedRouter history={history}>
+              <Routes />
+            </ConnectedRouter>
+            <ToastContainer />
+          </PersistGate>
+        </Provider>
+      </SequelizeContext.Provider>
     );
   }
 }

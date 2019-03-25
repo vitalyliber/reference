@@ -9,6 +9,7 @@ import Select from 'react-select';
 import DataFilter from 'datafilter';
 import fsExtra from 'fs-extra';
 import { confirmAlert } from 'react-confirm-alert';
+import SequelizeContext from '../sequelize/sequelizeContext';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
 import { createTable } from '../utils/table';
@@ -24,7 +25,7 @@ type Props = {
   clearUsers: void
 };
 
-export default class Home extends Component<Props> {
+class Home extends Component<Props> {
   props: Props;
 
   constructor(props) {
@@ -39,7 +40,7 @@ export default class Home extends Component<Props> {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const { users, references } = this.props;
     const newUsers = cachedUsers(users, references);
     this.setState({
@@ -410,6 +411,9 @@ export default class Home extends Component<Props> {
     );
   }
 }
+
+Home.contextType = SequelizeContext;
+export default Home;
 
 const Container = styled.div`
   padding: 15px;

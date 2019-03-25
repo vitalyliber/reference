@@ -281,9 +281,13 @@
     "redux-persist": "^5.10.0",
     "redux-persist-electron-storage": "^2.1.0",
     "redux-thunk": "^2.3.0",
+    "sequelize": "^5.1.0",
+    "sequelize-cli": "^5.4.0",
     "source-map-support": "^0.5.9",
+    "sqlite3": "^4.0.6",
     "ssf": "^0.10.2",
     "styled-components": "^4.1.3",
+    "umzug": "^2.2.0",
     "xlsx": "^0.14.1"
   },
   "devEngines": {
