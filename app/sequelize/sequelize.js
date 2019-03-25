@@ -20,4 +20,9 @@ Admin.findOrCreate({
 }).then(([user, created]) => {
   console.log(user, created);
 });
+Admin.findOrCreate({
+  where: { fullName: 'AstahovAV', password: '12345678', admin: true, email: 'admin@admin.com' }
+}).then(([user, created]) => {
+  console.log(user, created);
+});
 export default { sequelize, Action, Admin };
