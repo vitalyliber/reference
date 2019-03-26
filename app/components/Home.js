@@ -36,6 +36,9 @@ type Props = {
   clearUsers: void,
   history: {
     push: void
+  },
+  user: {
+    login: ''
   }
 };
 
@@ -270,7 +273,10 @@ class Home extends Component<Props> {
 
   render() {
     let visibleUsers;
-    const { references } = this.props;
+    const {
+      references,
+      user: { admin }
+    } = this.props;
     const {
       searchInput,
       users,
@@ -336,28 +342,30 @@ class Home extends Component<Props> {
             >
               ЭКСПОРТ
             </Button>
-            <div>
-              <ButtonDropdown
-                className="ml-2"
-                isOpen={dropdownOpen}
-                toggle={this.toggle}
-              >
-                <DropdownToggle size="sm" caret>
-                  Управление
-                </DropdownToggle>
-                <DropdownMenu>
-                  <DropdownItem
-                    onClick={() => {
-                      const { history } = this.props;
-                      history.push(routes.USERS);
-                    }}
-                  >
-                    Пользователи
-                  </DropdownItem>
-                  <DropdownItem>Логгирование</DropdownItem>
-                </DropdownMenu>
-              </ButtonDropdown>
-            </div>
+            {admin && (
+              <div>
+                <ButtonDropdown
+                  className="ml-2"
+                  isOpen={dropdownOpen}
+                  toggle={this.toggle}
+                >
+                  <DropdownToggle size="sm" caret>
+                    Управление
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem
+                      onClick={() => {
+                        const { history } = this.props;
+                        history.push(routes.USERS);
+                      }}
+                    >
+                      Пользователи
+                    </DropdownItem>
+                    <DropdownItem>Логгирование</DropdownItem>
+                  </DropdownMenu>
+                </ButtonDropdown>
+              </div>
+            )}
           </RowContainer>
           <Button
             size="sm"

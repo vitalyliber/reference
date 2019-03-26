@@ -142,16 +142,18 @@ export default class Users extends Component {
             </thead>
             <tbody>
               {admins.map(el => (
-                <tr>
+                <tr key={el.id}>
                   <td>{el.fullName}</td>
                   <td>{el.admin ? 'Да' : 'Нет'}</td>
                   <td>
-                    <IconDelete
-                      icon="trash"
-                      onClick={() => {
-                        this.delete(el.id);
-                      }}
-                    />
+                    {!el.admin && (
+                      <IconDelete
+                        icon="trash"
+                        onClick={() => {
+                          this.delete(el.id);
+                        }}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}

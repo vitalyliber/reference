@@ -3,6 +3,7 @@ import { combineReducers } from 'redux';
 import { connectRouter } from 'connected-react-router';
 import counter from './counter';
 import users from './users';
+import user from './user';
 import references from './references';
 
 export default function createRootReducer(history: History) {
@@ -10,6 +11,7 @@ export default function createRootReducer(history: History) {
     router: connectRouter(history),
     counter,
     users,
-    references
+    references,
+    user
   });
 }

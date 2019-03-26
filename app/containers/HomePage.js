@@ -6,7 +6,8 @@ import * as refActions from '../actions/references';
 
 const mapStateToProps = state => ({
   users: state.users.list,
-  references: state.references.list
+  references: state.references.list,
+  user: state.user
 });
 
 export default connect(

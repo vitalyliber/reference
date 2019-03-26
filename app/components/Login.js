@@ -2,18 +2,34 @@ import React, { Component } from 'react';
 import { Button, Form, FormGroup, Input } from 'reactstrap';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
+import _ from 'lodash';
 import routes from '../constants/routes';
 
-export default class Login extends Component {
+type Props = {
+  user: {
+    login: ''
+  }
+};
+
+export default class Login extends Component<Props> {
   constructor(props) {
     super(props);
     this.inputFullName = React.createRef();
     this.inputPassword = React.createRef();
   }
 
+  componentDidMount() {
+    const {
+      user: { login }
+    } = this.props;
+    if (!_.isEmpty(login)) {
+      this.inputFullName.current.value = login;
+    }
+  }
+
   onSubmit = async e => {
     e.preventDefault();
-    const { history } = this.props;
+    const { history, addUser } = this.props;
     const fullName = this.inputFullName.current.value;
     const password = this.inputPassword.current.value;
     console.log(fullName, password);
@@ -36,6 +52,7 @@ export default class Login extends Component {
       });
       return;
     }
+    addUser(admin);
     history.push(routes.HOME);
   };
 
