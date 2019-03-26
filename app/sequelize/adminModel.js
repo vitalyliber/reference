@@ -5,15 +5,18 @@ const actionModel = sequelize =>
     fullName: {
       type: Sequelize.STRING
     },
-    email: {
-      type: Sequelize.STRING
-    },
     password: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      validate: {
+        len: {
+          args: [4, 8],
+          msg: "Длина пароля должна быть от 4 до 8 символов"
+        }
+      }
     },
     admin: {
       type: Sequelize.BOOLEAN
-    },
+    }
   });
 
 export default actionModel;

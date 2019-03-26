@@ -1,5 +1,4 @@
 import Sequelize from 'sequelize';
-import React from 'react';
 import getUserDataPath from '../utils/userDataPath';
 
 import actionModel from './actionModel';
@@ -15,14 +14,22 @@ const Admin = adminModel(sequelize);
 Admin.hasMany(Action);
 Action.belongsTo(Admin);
 sequelize.sync();
-Admin.findOrCreate({
-  where: { fullName: 'admin', password: 'password', admin: true, email: 'admin@admin.com' }
-}).then(([user, created]) => {
-  console.log(user, created);
-});
-Admin.findOrCreate({
-  where: { fullName: 'AstahovAV', password: '12345678', admin: true, email: 'admin@admin.com' }
-}).then(([user, created]) => {
-  console.log(user, created);
-});
+const beforeStart = async () => {
+  await Admin.findOrCreate({
+    where: {
+      fullName: 'admin',
+      password: 'password',
+      admin: true
+    }
+  });
+  await Admin.findOrCreate({
+    where: {
+      fullName: 'AstahovAV',
+      password: '12345678',
+      admin: true
+    }
+  });
+};
+beforeStart();
+
 export default { sequelize, Action, Admin };

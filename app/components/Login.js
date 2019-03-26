@@ -49,7 +49,7 @@ export default class Login extends Component {
               innerRef={this.inputFullName}
               type="text"
               name="fullName"
-              placeholder="Имя пользователя"
+              placeholder="Логин"
             />
           </FormGroup>
           <FormGroup>

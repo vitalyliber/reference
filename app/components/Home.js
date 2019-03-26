@@ -1,7 +1,17 @@
 // @flow
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Table, Breadcrumb, BreadcrumbItem, Input, Button } from 'reactstrap';
+import {
+  Table,
+  Breadcrumb,
+  BreadcrumbItem,
+  Input,
+  Button,
+  ButtonDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
+} from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
@@ -16,13 +26,17 @@ import { createTable } from '../utils/table';
 import cachedOptions from '../utils/cachedOptions';
 import cachedUsers from '../utils/cachedUsers';
 import getUserDataPath from '../utils/userDataPath';
+import routes from '../constants/routes';
 
 type Props = {
   users: [],
   references: [],
   mergeUsers: void,
   clearRefs: void,
-  clearUsers: void
+  clearUsers: void,
+  history: {
+    push: void
+  }
 };
 
 class Home extends Component<Props> {
@@ -36,7 +50,8 @@ class Home extends Component<Props> {
       users: [],
       filteredUsers: [],
       selectedRegionOption: null,
-      selectedReferenceOption: false
+      selectedReferenceOption: false,
+      dropdownOpen: false
     };
   }
 
@@ -250,6 +265,9 @@ class Home extends Component<Props> {
     });
   };
 
+  toggle = () =>
+    this.setState(({ dropdownOpen }) => ({ dropdownOpen: !dropdownOpen }));
+
   render() {
     let visibleUsers;
     const { references } = this.props;
@@ -260,7 +278,8 @@ class Home extends Component<Props> {
       selectedRegionOption,
       selectedPositionOption,
       selectedYearOption,
-      selectedReferenceOption
+      selectedReferenceOption,
+      dropdownOpen
     } = this.state;
 
     const filter = new DataFilter();
@@ -317,14 +336,28 @@ class Home extends Component<Props> {
             >
               ЭКСПОРТ
             </Button>
-            <Button
-              size="sm"
-              color="danger"
-              onClick={this.purgeDatabase}
-              className="mb-3 ml-2 text-uppercase"
-            >
-              УДАЛИТЬ
-            </Button>
+            <div>
+              <ButtonDropdown
+                className="ml-2"
+                isOpen={dropdownOpen}
+                toggle={this.toggle}
+              >
+                <DropdownToggle size="sm" caret>
+                  Управление
+                </DropdownToggle>
+                <DropdownMenu>
+                  <DropdownItem
+                    onClick={() => {
+                      const { history } = this.props;
+                      history.push(routes.USERS);
+                    }}
+                  >
+                    Пользователи
+                  </DropdownItem>
+                  <DropdownItem>Логгирование</DropdownItem>
+                </DropdownMenu>
+              </ButtonDropdown>
+            </div>
           </RowContainer>
           <Button
             size="sm"

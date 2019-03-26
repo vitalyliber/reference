@@ -4,6 +4,7 @@ import routes from './constants/routes';
 import App from './containers/App';
 import HomePage from './containers/HomePage';
 import LoginPage from './containers/LoginPage';
+import UsersPage from './containers/UsersPage';
 import EditPage from './containers/EditPage';
 import CounterPage from './containers/CounterPage';
 
@@ -13,6 +14,7 @@ export default () => (
       <Route path={`${routes.EDIT}`} component={EditPage} />
       <Route path={routes.COUNTER} component={CounterPage} />
       <Route path={routes.HOME} component={HomePage} />
+      <Route path={routes.USERS} component={UsersPage} />
       <Route path={routes.LOGIN} component={LoginPage} />
     </Switch>
   </App>
