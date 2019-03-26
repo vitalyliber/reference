@@ -15,6 +15,8 @@ import {
   CardSubtitle,
   Badge
 } from 'reactstrap';
+import { toast } from 'react-toastify';
+import _ from 'lodash';
 import Select from 'react-select';
 import electron from 'electron';
 import fs from 'fs';
@@ -24,12 +26,11 @@ import getUserDataPath from '../utils/userDataPath';
 import '!style-loader!css-loader!bootstrap/dist/css/bootstrap.css';
 import ModalUploader from './ModalUploader';
 import { tableDateFormat, getListOfYears } from '../utils/dateFormat';
-import { toast } from 'react-toastify';
-import _ from 'lodash';
+import SequelizeContext from '../sequelize/sequelizeContext';
 
 type Props = {};
 
-export default class Edit extends Component<Props> {
+class Edit extends Component<Props> {
   constructor(props) {
     super(props);
     this.modal = React.createRef();
@@ -103,6 +104,22 @@ export default class Edit extends Component<Props> {
     reader.readAsBinaryString(file);
   };
 
+  createLog = async message => {
+    const { Action, Admin } = this.context;
+    const {
+      user: { id }
+    } = this.props;
+    const admin = await Admin.findOne({
+      where: {
+        id
+      }
+    });
+    const action = await Action.create({
+      action: message,
+    });
+    await admin.setActions([action]);
+  };
+
   removeFile = el => {
     const { removeRef } = this.props;
     const userDataPath = getUserDataPath();
@@ -115,6 +132,7 @@ export default class Edit extends Component<Props> {
           onClick: () => {
             try {
               fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
+              this.createLog('Удаление справки');
             } catch (e) {
               console.log(e);
             }
@@ -250,6 +268,10 @@ export default class Edit extends Component<Props> {
   }
 }
 
+Edit.contextType = SequelizeContext;
+
+export default Edit;
+
 const Container = styled.div`
   padding: 15px;
 `;
@@ -269,11 +291,11 @@ const IconDelete = styled(FontAwesomeIcon)`
 `;
 
 const BadgeExtension = styled(Badge)`
-    cursor: pointer;
-    width: 50px;
-    display: flex !important;
-    flex-direction: row;
-    justify-content: space-between;
+  cursor: pointer;
+  width: 50px;
+  display: flex !important;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
 const ActionsTd = styled.td`

@@ -3,5 +3,6 @@
   "HOME": "/home",
   "EDIT": "/edit",
   "COUNTER": "/counter",
-  "USERS": "/users"
+  "USERS": "/users",
+  "LOGS": "/logs"
 }

@@ -361,7 +361,14 @@ class Home extends Component<Props> {
                     >
                       Пользователи
                     </DropdownItem>
-                    <DropdownItem>Логгирование</DropdownItem>
+                    <DropdownItem
+                      onClick={() => {
+                        const { history } = this.props;
+                        history.push(routes.LOGS);
+                      }}
+                    >
+                      Лог действий
+                    </DropdownItem>
                   </DropdownMenu>
                 </ButtonDropdown>
               </div>
