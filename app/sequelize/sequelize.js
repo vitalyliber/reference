@@ -29,6 +29,11 @@ const beforeStart = async () => {
       admin: true
     }
   });
+  // need to remove in the future
+  // await Action.destroy({
+  //   where: {},
+  //   truncate: true
+  // })
 };
 beforeStart();
 

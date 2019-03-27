@@ -100,11 +100,15 @@ class Edit extends Component<Props> {
       });
       this.modal.current.decline();
       this.setState({ selectedOption: null });
+      this.createLog(`Добавление справки за ${selectedOption.value} год`);
     };
     reader.readAsBinaryString(file);
   };
 
   createLog = async message => {
+    const {
+      location: { state: { patronymic, name, lastName } },
+    } = this.props;
     const { Action, Admin } = this.context;
     const {
       user: { id }
@@ -115,9 +119,9 @@ class Edit extends Component<Props> {
       }
     });
     const action = await Action.create({
-      action: message,
+      action: `${message} (${lastName} ${name} ${patronymic})`,
     });
-    await admin.setActions([action]);
+    await admin.addAction(action);
   };
 
   removeFile = el => {
@@ -132,7 +136,7 @@ class Edit extends Component<Props> {
           onClick: () => {
             try {
               fs.unlinkSync(`${userDataPath}/refs/${el.id}.${el.extension}`);
-              this.createLog('Удаление справки');
+              this.createLog(`Удаление справки за ${el.year} год`);
             } catch (e) {
               console.log(e);
             }
