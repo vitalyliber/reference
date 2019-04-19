@@ -6,26 +6,43 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Input,
-  Button
+  Button,
+  ButtonDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
 } from 'reactstrap';
 import XLSX from 'xlsx';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 import DataFilter from 'datafilter';
+import fsExtra from 'fs-extra';
+import { confirmAlert } from 'react-confirm-alert';
+import SequelizeContext from '../sequelize/sequelizeContext';
 import ModalUploader from './ModalUploader';
 import referenceTail from './referenceTail';
 import { createTable } from '../utils/table';
 import cachedOptions from '../utils/cachedOptions';
 import cachedUsers from '../utils/cachedUsers';
+import getUserDataPath from '../utils/userDataPath';
+import routes from '../constants/routes';
 
 type Props = {
   users: [],
   references: [],
-  mergeUsers: void
+  mergeUsers: void,
+  clearRefs: void,
+  clearUsers: void,
+  history: {
+    push: void
+  },
+  user: {
+    login: ''
+  }
 };
 
-export default class Home extends Component<Props> {
+class Home extends Component<Props> {
   props: Props;
 
   constructor(props) {
@@ -36,12 +53,12 @@ export default class Home extends Component<Props> {
       users: [],
       filteredUsers: [],
       selectedRegionOption: null,
-      selectedReferenceOption: false
+      selectedReferenceOption: false,
+      dropdownOpen: false
     };
-    this.tableFilter = React.createRef();
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const { users, references } = this.props;
     const newUsers = cachedUsers(users, references);
     this.setState({
@@ -140,7 +157,7 @@ export default class Home extends Component<Props> {
   parseData = file => {
     const errorMsg = 'Попробуйте другой файл';
     const rABS = true;
-    const { mergeUsers } = this.props;
+    const { mergeUsers, references } = this.props;
     const reader = new FileReader();
     reader.onload = f => {
       try {
@@ -148,11 +165,8 @@ export default class Home extends Component<Props> {
         if (!rABS) data = new Uint8Array(data);
         const workbook = XLSX.read(data, { type: rABS ? 'binary' : 'array' });
         const ws = workbook.Sheets['Лист1'];
-        console.log('WorkSheet', ws);
         const json = XLSX.utils.sheet_to_json(ws);
-        console.log('JSON', json);
         const jsonWithoutHeaders = json.slice(2);
-        console.log('jsonWithoutHeaders', jsonWithoutHeaders);
         if (typeof jsonWithoutHeaders[0]['__EMPTY'] !== 'number') {
           toast.error(errorMsg, {
             position: toast.POSITION.TOP_CENTER
@@ -161,10 +175,9 @@ export default class Home extends Component<Props> {
           return;
         }
         const users = this.processTable(jsonWithoutHeaders);
-        console.log('USERS', users);
         mergeUsers(users);
-        this.setState({ users, filteredUsers: users });
-        this.tableFilter.current.reset(users);
+        const newUsers = cachedUsers(users, references);
+        this.setState({ users: newUsers, filteredUsers: newUsers });
       } catch (e) {
         console.log(e);
         toast.error(errorMsg, {
@@ -179,7 +192,7 @@ export default class Home extends Component<Props> {
       this.modal.current.decline();
     };
     if (rABS) {
-      reader.readAsBinaryString(file);
+      return reader.readAsBinaryString(file);
     }
     reader.readAsArrayBuffer(file);
   };
@@ -223,9 +236,47 @@ export default class Home extends Component<Props> {
     this.toggleSearchInput({ target: { value: '' } });
   };
 
+  purgeDatabase = () => {
+    confirmAlert({
+      title: 'Подтвердите удаление',
+      message:
+        'Вы уверены, что хотите удалить данные реестра и все файлы справок?',
+      buttons: [
+        {
+          label: 'Да',
+          onClick: () => {
+            try {
+              const { clearRefs, clearUsers } = this.props;
+              const userDataPath = getUserDataPath();
+              fsExtra.emptyDirSync(`${userDataPath}/refs`);
+              clearRefs();
+              clearUsers();
+              this.setState({
+                users: [],
+                filteredUsers: []
+              });
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        },
+        {
+          label: 'Нет',
+          onClick: () => {}
+        }
+      ]
+    });
+  };
+
+  toggle = () =>
+    this.setState(({ dropdownOpen }) => ({ dropdownOpen: !dropdownOpen }));
+
   render() {
     let visibleUsers;
-    const { references } = this.props;
+    const {
+      references,
+      user: { admin }
+    } = this.props;
     const {
       searchInput,
       users,
@@ -233,7 +284,8 @@ export default class Home extends Component<Props> {
       selectedRegionOption,
       selectedPositionOption,
       selectedYearOption,
-      selectedReferenceOption
+      selectedReferenceOption,
+      dropdownOpen
     } = this.state;
 
     const filter = new DataFilter();
@@ -290,6 +342,37 @@ export default class Home extends Component<Props> {
             >
               ЭКСПОРТ
             </Button>
+            {admin && (
+              <div>
+                <ButtonDropdown
+                  className="ml-2"
+                  isOpen={dropdownOpen}
+                  toggle={this.toggle}
+                >
+                  <DropdownToggle size="sm" caret>
+                    Управление
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem
+                      onClick={() => {
+                        const { history } = this.props;
+                        history.push(routes.USERS);
+                      }}
+                    >
+                      Пользователи
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => {
+                        const { history } = this.props;
+                        history.push(routes.LOGS);
+                      }}
+                    >
+                      Лог действий
+                    </DropdownItem>
+                  </DropdownMenu>
+                </ButtonDropdown>
+              </div>
+            )}
           </RowContainer>
           <Button
             size="sm"
@@ -341,20 +424,22 @@ export default class Home extends Component<Props> {
           placeholder="Фильтр по году справки"
         />
         <WrappedFormGroup check>
-            <CheckBox
-              checked={selectedReferenceOption}
-              onChange={this.handleReferenceChange}
-              type="checkbox"
-            />{' '}
-            Фильтр по наличию справки
+          <CheckBox
+            checked={selectedReferenceOption}
+            onChange={this.handleReferenceChange}
+            type="checkbox"
+          />{' '}
+          Фильтр по наличию справки
         </WrappedFormGroup>
         <BorderContainer>
           <Table hover striped size="sm">
             <thead>
-              <th>ОМСУ</th>
-              <th>ФИО</th>
-              <th>Должность</th>
-              <th>Период</th>
+              <tr>
+                <th>ОМСУ</th>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th>Период</th>
+              </tr>
             </thead>
             <tbody>
               {visibleUsers.map(el => referenceTail({ el, searchInput }))}
@@ -374,6 +459,9 @@ export default class Home extends Component<Props> {
     );
   }
 }
+
+Home.contextType = SequelizeContext;
+export default Home;
 
 const Container = styled.div`
   padding: 15px;

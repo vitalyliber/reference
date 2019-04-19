@@ -1,7 +1,8 @@
 // @flow
 import { connect } from 'react-redux';
-import Home from '../components/Home';
-import * as userActions from '../actions/users';
+import SequelizeContext from '../sequelize/sequelizeContext';
+import Login from '../components/Login';
+import * as userActions from '../actions/user';
 import * as refActions from '../actions/references';
 
 const mapStateToProps = state => ({
@@ -10,7 +11,9 @@ const mapStateToProps = state => ({
   user: state.user
 });
 
+Login.contextType = SequelizeContext;
+
 export default connect(
   mapStateToProps,
   { ...userActions, ...refActions }
-)(Home);
+)(Login);

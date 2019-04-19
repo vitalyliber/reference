@@ -21,6 +21,7 @@ class EditPage extends Component<Props> {
 
 const mapStateToProps = state => ({
   references: state.references.list,
+  user: state.user
 });
 
 export default connect(

@@ -1,5 +1,5 @@
 // @flow
-import { ADD_REF, REMOVE_REF } from '../actions/references';
+import { ADD_REF, CLEAR_REFS, REMOVE_REF } from '../actions/references';
 
 const initialState = {
   list: []
@@ -16,6 +16,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         list: action.references
+      };
+    case CLEAR_REFS:
+      return {
+        ...state,
+        list: []
       };
     default:
       return state;

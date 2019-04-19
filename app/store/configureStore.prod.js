@@ -17,7 +17,7 @@ const enhancer = applyMiddleware(thunk, router);
 const persistConfig = {
   key: 'root',
   storage: createElectronStorage(),
-  whitelist: ['counter', 'users', 'references']
+  whitelist: ['counter', 'users', 'references', 'user']
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
